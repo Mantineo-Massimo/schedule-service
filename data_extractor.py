@@ -1,4 +1,4 @@
-from flask import Flask, render_template_string
+from flask import Flask, jsonify
 import requests
 from datetime import datetime
 
@@ -41,95 +41,11 @@ def transform_lesson_data():
         print(f"Error fetching data: {e}")
         return [{"error": "Unable to retrieve lesson data at this time"}]
 
-# Flask route to render HTML table for kiosk display
+# Flask route to return JSON data
 @app.route('/lessons', methods=['GET'])
 def get_lessons():
     data = transform_lesson_data()
-
-    # the HTML part for displaying data in table
-    html_template = '''
-    <html>
-    <head>
-        <title>Lesson Schedule</title>
-        <meta http-equiv="refresh" content="60">  <!-- Auto-refresh every 60 seconds -->
-        <style>
-            body {
-                font-family: Arial, sans-serif;
-                background-color: #f4f4f9;
-                margin: 0;
-                padding: 0;
-                display: flex;
-                flex-direction: column;  /* Ensure vertical layout */
-                align-items: center;
-                justify-content: center;
-                height: 100vh;
-            }
-            h1 {
-                text-align: center;
-                font-size: 28px;  /* Adjusted the font size */
-                color: #333;
-                margin-bottom: 20px;
-                width: 100%;  /* Ensures it stays centered */
-            }
-            table {
-                width: 80%;  /* Reduce width to fit better */
-                border-collapse: collapse;
-                font-size: 16px;  /* Reduced font size */
-            }
-            table, th, td {
-                border: 1px solid #333;
-            }
-            th, td {
-                padding: 8px;
-                text-align: center;
-            }
-            th {
-                background-color: #333;
-                color: white;
-            }
-            tr:nth-child(even) {
-                background-color: #f2f2f2;
-            }
-            /* Responsive design for smaller screens */
-            @media screen and (max-width: 768px) {
-                table {
-                    width: 100%;
-                    font-size: 14px;
-                }
-                h1 {
-                    font-size: 24px;
-                }
-            }
-        </style>
-    </head>
-    <body>
-        <h1>Lesson Schedule</h1>
-        <table>
-            <tr>
-                <th>Start Time</th>
-                <th>End Time</th>
-                <th>Lesson Name</th>
-                <th>Instructor</th>
-            </tr>
-            {% for lesson in data %}
-            {% if lesson.error %}
-            <tr>
-                <td colspan="4">{{ lesson.error }}</td>
-            </tr>
-            {% else %}
-            <tr>
-                <td>{{ lesson.start_time }}</td>
-                <td>{{ lesson.end_time }}</td>
-                <td>{{ lesson.lesson_name }}</td>
-                <td>{{ lesson.instructor }}</td>
-            </tr>
-            {% endif %}
-            {% endfor %}
-        </table>
-    </body>
-    </html>
-    '''
-    return render_template_string(html_template, data=data)
+    return jsonify(data)  # Return JSON data
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
