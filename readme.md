@@ -1,13 +1,13 @@
 # **Campus Lesson Kiosk API**
 
-This is a Flask-based application that provides lesson schedule data in JSON format for campus information kiosks. It leverages **Pydantic** for input and output validation and implements caching to optimize API performance. The application is fully containerized using **Docker** for consistent deployment across different environments.
+This Flask-based application provides lesson schedule data in JSON format for campus information kiosks. It fetches and alternates between morning and afternoon lessons every 15 seconds. It also uses **Pydantic** for input and output validation. The application is fully containerized using **Docker** for consistent deployment across different environments.
 
 ---
 
 ## **Features**
 - Fetches lesson schedule data from the university API.
+- Alternates between **morning** and **afternoon** classes every 15 seconds in a single API route.
 - Validates both input and output using **Pydantic**.
-- Caches responses to reduce API load and improve performance.
 - Returns lesson data in a clean and readable JSON format with human-readable date and time.
 - Performs input validation on classroom (`aula`) and building (`edificio`) parameters.
 - Dockerized for seamless and easy deployment.
@@ -25,6 +25,7 @@ Fetches and returns a list of lessons for the specified classroom and building.
 
 #### **Example Request**:
 GET /lessons?aula=6144b62e06477900174b0cfd&edificio=5f6cb2c183c80e0018f4d470
+
 
 
 #### **Example Response**:
