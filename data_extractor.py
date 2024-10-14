@@ -1,13 +1,16 @@
 from flask import Flask, jsonify, request
 import requests
-from datetime import datetime, time
-from threading import Timer
+from datetime import datetime, time, timedelta
 import os
-from pydantic import BaseModel, Field, ValidationError
+from pydantic import BaseModel, Field
 
 app = Flask(__name__)
 
+# Base URL for the university API
 BASE_URL = os.getenv('LESSON_API_BASE_URL', 'https://unime-public.prod.up.cineca.it')
+
+# Cache structure to store responses temporarily
+cache = {}
 
 # Pydantic model for input validation
 class LessonRequest(BaseModel):
@@ -49,44 +52,63 @@ def split_classes(json_data):
 
     return morning_classes, afternoon_classes
 
+# Cache helper functions
+def get_from_cache(aula, edificio):
+    cache_key = f"{aula}_{edificio}"
+    cache_entry = cache.get(cache_key)
+
+    if cache_entry:
+        data, expiration_time = cache_entry
+        if expiration_time > datetime.now():
+            print("Cache hit")
+            return data  # Valid cache entry
+        else:
+            print("Cache expired")
+            del cache[cache_key]  # Remove expired cache entry
+
+    print("Cache miss")
+    return None
+
+def set_in_cache(aula, edificio, data, ttl_minutes=15):
+    cache_key = f"{aula}_{edificio}"
+    expiration_time = datetime.now() + timedelta(minutes=ttl_minutes)
+    cache[cache_key] = (data, expiration_time)
+    print(f"Data cached for aula: {aula}, edificio: {edificio}")
+
 # Class to handle alternating between morning and afternoon classes
 class LessonLooper:
     def __init__(self, aula, edificio):
         self.aula = aula
         self.edificio = edificio
-        self.current_display = "morning"  # Start with morning classes
+        self.current_display = "morning"
         self.morning_classes = []
         self.afternoon_classes = []
-        self.toggle_time = datetime.now()  # Store the time of the toggle
+        self.toggle_time = datetime.now()
 
     # Fetch the lesson data and split into morning and afternoon
     def fetch_and_split(self):
-        json_data = fetch_lesson_data(self.aula, self.edificio)
-        self.morning_classes, self.afternoon_classes = split_classes(json_data)
-        print(f"Morning classes: {len(self.morning_classes)}")
-        print(f"Afternoon classes: {len(self.afternoon_classes)}")
+        # Check if data is cached
+        cached_data = get_from_cache(self.aula, self.edificio)
+        if cached_data:
+            self.morning_classes, self.afternoon_classes = cached_data
+        else:
+            # Fetch from API and cache the results
+            json_data = fetch_lesson_data(self.aula, self.edificio)
+            self.morning_classes, self.afternoon_classes = split_classes(json_data)
+            set_in_cache(self.aula, self.edificio, (self.morning_classes, self.afternoon_classes))
 
-    # Toggle every 15 seconds based on time passed
+    # Toggle between morning and afternoon classes every 15 seconds
     def toggle(self):
         now = datetime.now()
         elapsed_time = (now - self.toggle_time).total_seconds()
 
-        # Toggle between morning and afternoon every 15 seconds
         if elapsed_time >= 15:
             self.toggle_time = now  # Reset the toggle time
-            if self.current_display == "morning":
-                self.current_display = "afternoon"
-            else:
-                self.current_display = "morning"
+            self.current_display = "afternoon" if self.current_display == "morning" else "morning"
 
     def get_current_classes(self):
-        # Toggle the display every 15 seconds
-        self.toggle()
-
-        if self.current_display == "morning":
-            return self.morning_classes
-        else:
-            return self.afternoon_classes
+        self.toggle()  # Toggle morning/afternoon every 15 seconds
+        return self.morning_classes if self.current_display == "morning" else self.afternoon_classes
 
 # Global variable to store the lesson looper instance
 lesson_looper = None
