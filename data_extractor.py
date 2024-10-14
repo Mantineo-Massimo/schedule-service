@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 from flask import Flask, jsonify, request
+=======
+from flask import Flask, jsonify
+>>>>>>> 296877114146abd42e7aac284b813a9b4d1d32ba
 import requests
 from datetime import datetime
 import os
@@ -6,6 +10,7 @@ from pydantic import BaseModel, ValidationError, Field
 
 app = Flask(__name__)
 
+<<<<<<< HEAD
 # Load the base URL from the environment variable
 BASE_URL = os.getenv('LESSON_API_BASE_URL', 'https://unime-public.prod.up.cineca.it')
 
@@ -20,6 +25,15 @@ class LessonResponse(BaseModel):
     end_time: str
     lesson_name: str
     instructor: str
+=======
+# Function to format date and time
+def format_datetime(iso_datetime):
+    try:
+        dt = datetime.strptime(iso_datetime, "%Y-%m-%dT%H:%M:%S.%fZ")
+        return dt.strftime("%d %B %Y, %I:%M %p")  # Format: 07 October 2024, 07:00 AM
+    except ValueError:
+        return iso_datetime  
+>>>>>>> 296877114146abd42e7aac284b813a9b4d1d32ba
 
 # Function to fetch and transform lesson data
 def transform_lesson_data(aula: str, edificio: str):
@@ -33,7 +47,11 @@ def transform_lesson_data(aula: str, edificio: str):
     # Request lesson data
     try:
         response = requests.get(url)
+<<<<<<< HEAD
         response.raise_for_status()
+=======
+        response.raise_for_status() 
+>>>>>>> 296877114146abd42e7aac284b813a9b4d1d32ba
         json_data = response.json()
 
         lesson_info_list = []
@@ -59,6 +77,7 @@ def transform_lesson_data(aula: str, edificio: str):
     except requests.exceptions.RequestException as e:
         return [{"error": "Unable to retrieve lesson data"}]
 
+<<<<<<< HEAD
 # Route to return JSON lesson data with classroom and building as query parameters
 @app.route('/lessons', methods=['GET'])
 def get_lessons():
@@ -77,6 +96,13 @@ def get_lessons():
 
     # Return the validated data as JSON
     return jsonify(data)
+=======
+# Flask route to return JSON data
+@app.route('/lessons', methods=['GET'])
+def get_lessons():
+    data = transform_lesson_data()
+    return jsonify(data)  # Return JSON data
+>>>>>>> 296877114146abd42e7aac284b813a9b4d1d32ba
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
