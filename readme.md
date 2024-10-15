@@ -107,3 +107,124 @@ To run the tests, use the following command:
 ```bash
 python -m unittest testing_suit.py
 ```
+## Running in Debug Mode
+
+In production, debug mode is disabled by default. If you need to run the application in debug mode (for local development), set the `FLASK_DEBUG` environment variable to `1`:
+
+```bash
+export FLASK_DEBUG=1
+```
+
+### Testing & Running:
+
+1. **Build the Docker image**:
+   ```bash
+   docker build -t flask-app .
+   ```
+2. **Running the Docker container**:
+    ```bash
+    docker run -p 5000:5000 flask-app
+   
+# Testing Guide
+
+This guide explains how to set up, run, and write tests for the project.
+
+## 1. Test Structure
+
+The tests are organized to cover different aspects of the application, including:
+
+### 1.1. **Validation Tests**
+Tests that check whether the input parameters are valid. This includes ensuring the classroom (`aula`) and building (`edificio`) parameters are passed correctly.
+
+- **Valid input test**: Ensures that valid `aula` and `edificio` values return a 200 status code.
+- **Missing parameter tests**: Ensures that missing `aula` or `edificio` results in a 400 status code.
+- **Invalid parameter length tests**: Ensures that an `aula` or `edificio` exceeding the allowed length (30 characters) returns a 400 status code.
+
+### 1.2. **API Response Tests**
+These tests validate that the API returns the correct data format when valid parameters are passed.
+
+- **Valid response test**: Ensures that the API returns the expected JSON format for a valid request.
+
+### 1.3. **Error Handling Tests**
+Tests that validate how the application handles errors and exceptions.
+
+- **General exception handling**: Ensures that unhandled exceptions return a proper error message and status code.
+
+### 1.4. **Cache Tests**
+Tests that validate if caching is working as expected to reduce the need for repeated API calls.
+
+## 2. How to Run the Tests
+
+Make sure that the project has the following Python libraries installed:
+
+- `unittest`
+- `requests`
+- `pydantic`
+
+### 2.1. Installing dependencies
+
+If the dependencies are not installed, use:
+
+```bash
+pip install -r requirements.txt
+```
+### 2.2. Running the tests
+
+To run the tests, use the following command:
+
+```bash
+pypthon -m unittest discover -s tests -p "*.py"
+
+```
+Please make sure to be in the main directory before
+
+
+-----------
+
+## Configuration
+
+### Environment Variables
+
+This application requires the following environment variable to be set:
+
+#### `LESSON_API_BASE_URL`
+
+- **Description**: This variable is used to specify the base URL for the lesson API. It is essential for the application to fetch the lesson schedule from the university's system.
+- **Default**: If not set, the application defaults to: `https://unime-public.prod.up.cineca.it`
+- **Usage**:
+  - When running the app, set the environment variable `LESSON_API_BASE_URL` to the desired API base URL.
+  - This URL will be used to fetch lesson schedule data for classrooms and buildings.
+
+#### Example
+
+You can set the environment variable in different ways depending on your operating system:
+
+- **On Windows (Command Prompt)**:
+    ```bash
+    set LESSON_API_BASE_URL=https://your-api-url.com
+    ```
+
+- **On Linux/macOS**:
+    ```bash
+    export LESSON_API_BASE_URL=https://your-api-url.com
+    ```
+
+- **In Docker (via Dockerfile)**:
+    You can set it in the Dockerfile like this:
+    ```dockerfile
+    ENV LESSON_API_BASE_URL=https://your-api-url.com
+    ```
+
+#### Example Usage with Docker
+
+If you're using Docker, you can either set the environment variable in the Dockerfile or pass it in when running the container:
+
+```bash
+docker run -e LESSON_API_BASE_URL=https://your-api-url.com -p 5000:5000 your-docker-image
+```
+Make sure to replace https://your-api-url.com with the actual base URL you want to use for fetching lesson data.
+
+## Project Overview
+
+This project was developed as part of a **part-time** work assignment. The goal was to build a system that fetches and displays lesson schedule data for the University of Messina (UNIME) campus, making it suitable for deployment on campus information kiosks. The project includes input validation, caching mechanisms, and API calls to fetch the lesson data in real-time.
+
