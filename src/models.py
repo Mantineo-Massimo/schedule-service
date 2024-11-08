@@ -3,8 +3,8 @@ from datetime import datetime, timedelta
 
 # Pydantic input validation model
 class LessonRequest(BaseModel):
-    aula: str = Field(..., max_length=30, pattern=r'^[a-zA-Z0-9]+$')
-    edificio: str = Field(..., max_length=30, pattern=r'^[a-zA-Z0-9]+$')
+    aula: str = Field(..., max_length=35, pattern=r'^[a-zA-Z0-9]+$')
+    edificio: str = Field(..., max_length=35, pattern=r'^[a-zA-Z0-9]+$')
 
 # Pydantic output model
 class LessonResponse(BaseModel):
@@ -12,6 +12,7 @@ class LessonResponse(BaseModel):
     end_time: str
     lesson_name: str
     instructor: str
+    classroom_name: str
 
 # In-memory cache
 cache = {}

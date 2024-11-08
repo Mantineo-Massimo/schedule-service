@@ -1,7 +1,7 @@
 from flask import request, jsonify
 from pydantic import ValidationError
 from src.services import LessonLooper
-from src.models import LessonRequest, LessonResponse
+from src.models  import LessonRequest, LessonResponse
 
 lesson_looper = None
 
@@ -41,7 +41,8 @@ def register_routes(app):
                     start_time=lesson.get("dataInizio", "N/A"),
                     end_time=lesson.get("dataFine", "N/A"),
                     lesson_name=lesson.get("evento", {}).get("dettagliDidattici", [{}])[0].get("nome", "N/A"),
-                    instructor=f'{lesson.get("docenti", [{}])[0].get("nome", "N/A")} {lesson.get("docenti", [{}])[0].get("cognome", "N/A")}'
+                    instructor=f'{lesson.get("docenti", [{}])[0].get("nome", "N/A")} {lesson.get("docenti", [{}])[0].get("cognome", "N/A")}',
+                    classroom_name=lesson.get("aule", [{}])[0].get("descrizione", "N/A")
                 ).model_dump()
                 for lesson in current_classes
             ]
