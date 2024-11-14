@@ -2,9 +2,8 @@
 FROM quay.io/sclorg/python-311-minimal-c9s
 
 # Step 2: Update the package manager and install essential build tools
-RUN microdnf update -y && \
-    pip install --upgrade pip setuptools && \
-    microdnf clean all
+RUN pip install --upgrade pip setuptools
+
 
 # Step 3: Set the working directory inside the container
 WORKDIR /app
