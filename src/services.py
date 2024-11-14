@@ -12,6 +12,7 @@ class LessonLooper:
         self.morning_classes = []
         self.afternoon_classes = []
         self.toggle_time = datetime.now()
+        self.classroom_name="N/A"
 
     def fetch_and_split(self):
         try:
@@ -21,6 +22,12 @@ class LessonLooper:
             else:
                 json_data = self.fetch_lesson_data()
                 if 'error' not in json_data:
+                    # Extract classroom name from the first lesson if available
+                    if json_data and 'aule' in json_data[0]:
+                        self.classroom_name = json_data[0].get("aule", [{}])[0].get("descrizione", "N/A")
+                        print("Extracted classroom name:", self.classroom_name)  # Debugging line
+                    else:
+                        print("Classroom name not found in JSON structure.")
                     self.morning_classes, self.afternoon_classes = self.split_classes(json_data)
                     set_in_cache(self.aula, self.edificio, (self.morning_classes, self.afternoon_classes))
                 else:

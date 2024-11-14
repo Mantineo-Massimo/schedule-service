@@ -30,10 +30,12 @@ def register_routes(app):
 
             # Get current classes (morning/afternoon)
             current_classes = lesson_looper.get_current_classes()
+            classroom_name = lesson_looper.classroom_name
 
             # Ensure current_classes is not None
             if not current_classes:
-                return jsonify({"error": "No classes available"}), 404
+                # Return the classroom name with a message when no classes are available
+                return jsonify([{"classroom_name": classroom_name, "message": "No classes available"}])
 
             # Format and return the classes
             formatted_classes = [
