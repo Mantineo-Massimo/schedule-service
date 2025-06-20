@@ -22,4 +22,4 @@ COPY . .
 EXPOSE 8080
 
 # EN/IT: Start command with production server / Comando di avvio con server di produzione
-CMD ["flask run", "--bind", "0.0.0.0:8080", "run:app"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8080", "run:app"]

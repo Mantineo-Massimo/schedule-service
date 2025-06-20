@@ -1,4 +1,4 @@
-# lession_kiosk_display
+# lession-kiosk-display
 
 ![Python](https://img.shields.io/badge/python-3.11-blue)
 ![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)
@@ -15,11 +15,11 @@
 ## 🧩 Description / Descrizione
 
 **EN:**  
-lession_kiosk_display is a Flask-based web application that dynamically shows current and upcoming lessons in classrooms and across entire floors of a university building.  
+lession-kiosk-display is a Flask-based web application that dynamically shows current and upcoming lessons in classrooms and across entire floors of a university building.  
 It uses official API data (e.g., from Cineca/Unime) and supports bilingual display (IT/EN) with automatic language switching, responsive UI, and Docker-based deployment.
 
 **IT:**  
-lession_kiosk_display è un'applicazione web basata su Flask che mostra in tempo reale le lezioni in corso o imminenti per singole aule o per interi piani.  
+lession-kiosk-display è un'applicazione web basata su Flask che mostra in tempo reale le lezioni in corso o imminenti per singole aule o per interi piani.  
 Utilizza dati ufficiali (es. API Cineca/Unime) e supporta visualizzazione bilingue (IT/EN), interfaccia responsive e distribuzione via Docker.
 
 ---
@@ -27,7 +27,7 @@ Utilizza dati ufficiali (es. API Cineca/Unime) e supporta visualizzazione biling
 ## 🏗️ Project Structure / Struttura del progetto
 
 ```
-lession_kiosk_display/
+lession-kiosk-display/
 ├── app/                              # Backend Flask API
 │   ├── __init__.py                   # Inizializzazione app Flask
 │   ├── config.py                     # Configurazione API base
