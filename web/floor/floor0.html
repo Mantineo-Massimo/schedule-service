@@ -1,0 +1,50 @@
+<!--
+EN: Template for floor view display.
+IT: Template per visualizzazione delle lezioni di un piano.
+-->
+
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Floor 0 Schedule</title>
+  <link rel="icon" href="../assets/favicon.ico" type="image/x-icon" />
+  <link rel="stylesheet" href="../static/css/floor_style.css" />
+</head>
+<body>
+  <div class="table-container">
+    <div class="scroll-wrapper">
+      <!-- EN/IT: Fixed header /Intestazione fissa -->
+      <div class="scroll-header">
+        <table>
+          <thead>
+            <tr>
+              <th>CLASSROOM</th>
+              <th>TIME</th>
+              <th>LESSON NAME</th>
+              <th>PROFESSOR</th>
+            </tr>
+          </thead>
+        </table>
+      </div>
+
+      <!-- EN/IT: Sliding body / Corpo scorrevole -->
+      <div class="scroll-body">
+        <table>
+          <tbody id="lesson-body">
+            <tr><td colspan="4">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- EN/IT: Clock, date, flat label / Orologio, data, etichetta piano -->
+  <div id="clock" class="top-right"></div>
+  <div id="current-date" class="bottom-left"></div>
+  <div id="floor-label" class="bottom-right"></div>
+
+  <script src="../static/js/floor_script.js"></script>
+</body>
+</html>

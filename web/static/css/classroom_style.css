@@ -1,0 +1,161 @@
+/* ============================================================================
+   EN: Global reset and background
+   IT: Reset globale e sfondo a schermo intero
+============================================================================ */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: "Helvetica", "Arial", sans-serif;
+  background: url('/assets/monitor_background.png') no-repeat center center fixed;
+  background-size: cover;
+  color: #222;
+}
+
+/* ============================================================================
+   EN: Container for lesson table
+   IT: Contenitore della tabella lezioni
+============================================================================ */
+.table-container {
+  position: absolute;
+  top: 14%;
+  left: 10%;
+  right: 10%;
+  height: 65%;
+  background-color: rgba(255,255,255,0.95);
+  padding: 30px 40px;
+  border-radius: 25px;
+  box-shadow: 0 0 25px rgba(0,0,0,0.2);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow-x: auto;
+}
+
+/* ============================================================================
+   EN: Table layout
+   IT: Struttura tabella
+============================================================================ */
+table {
+  width: 100%;
+  min-width: 700px;
+  height: 100%;
+  border-collapse: collapse;
+  font-size: 1.8em;
+  table-layout: fixed;
+}
+
+/* ============================================================================
+   EN: Header and cell alignment
+   IT: Allineamento celle e intestazioni
+============================================================================ */
+thead th,
+tbody td {
+  vertical-align: middle;
+  text-align: center;
+}
+
+/* EN: Align lesson name and professor name to the left
+   IT: Allinea a sinistra nome lezione e docente
+============================================================================ */
+tbody td:nth-child(2),
+tbody td:nth-child(4) {
+  text-align: justify;
+  text-justify: inter-word;
+  text-align-last: left;
+}
+
+/* ============================================================================
+   EN: Cell padding and column borders
+   IT: Padding celle e bordi tra colonne
+============================================================================ */
+th, td {
+  padding: 14px 18px;
+  border-right: 1px solid #ccc;
+}
+th:last-child,
+td:last-child {
+  border-right: none;
+}
+
+/* ============================================================================
+   EN: Header styling and row striping
+   IT: Stile intestazione e righe alternate
+============================================================================ */
+th {
+  background-color: #3c7cbb;
+  color: #fff;
+}
+tr:nth-child(even) { background-color: #f0f0f0; }
+tr:nth-child(odd)  { background-color: #e6f2ff; }
+
+/* ============================================================================
+   EN: Column widths (IT default)
+   IT: Larghezza colonne (italiano predefinito)
+============================================================================ */
+th:nth-child(1), td:nth-child(1) { width: 18%; } /* TIME / ORA */
+th:nth-child(2), td:nth-child(2) { width: 37%; } /* LESSON / LEZIONE */
+th:nth-child(3), td:nth-child(3) { width: 15%; } /* STATUS / STATO */
+th:nth-child(4), td:nth-child(4) { width: 30%; } /* PROFESSOR */
+
+/* ============================================================================
+   EN: Status indicator (dot + label)
+   IT: Indicatore stato (pallino + testo)
+============================================================================ */
+.status-indicator {
+  vertical-align: middle;
+  padding: 0 6px;
+  white-space: nowrap;
+}
+.status-dot {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  margin-right: 6px;
+}
+.status-soon  { background-color: green; }
+.status-live  { background-color: orange; }
+.status-ended { background-color: red; }
+
+/* ============================================================================
+   EN: Fixed UI elements (clock, classroom name, date)
+   IT: Elementi UI fissi (orologio, nome aula, data)
+============================================================================ */
+.top-right {
+  position: absolute;
+  top: 1%;
+  right: 2%;
+  font-size: 3.2em;
+  color: #fff;
+}
+.bottom-right {
+  position: absolute;
+  bottom: 2%;
+  right: 2%;
+  font-size: 2.2em;
+  color: #fff;
+}
+.bottom-left {
+  position: absolute;
+  bottom: 2%;
+  left: 2%;
+  font-size: 2.2em;
+  color: #fff;
+}
+
+/* ============================================================================
+   EN: Column width overrides for English
+   IT: Override larghezze colonne per lingua inglese
+============================================================================ */
+body.lang-en th:nth-child(1),
+body.lang-en td:nth-child(1) { width: 20%; }
+
+body.lang-en th:nth-child(2),
+body.lang-en td:nth-child(2) { width: 45%; }
+
+body.lang-en th:nth-child(3),
+body.lang-en td:nth-child(3) { width: 15%; }
+
+body.lang-en th:nth-child(4),
+body.lang-en td:nth-child(4) { width: 20%; }
