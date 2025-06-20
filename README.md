@@ -129,6 +129,9 @@ python run.py
 - **Massimo Mantineo**  
   @ Università di Messina  
   Corso di Laurea in Informatica (L-31)
+  - **Adeebullah Hamidy**  
+  @ Università di Messina  
+  Corso di Laurea in Informatica (L-31)
 
 ---
 
