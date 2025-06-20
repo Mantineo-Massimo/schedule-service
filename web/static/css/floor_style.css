@@ -2,14 +2,20 @@
    EN: Reset and fullscreen background
    IT: Reset e sfondo a tutto schermo
 ============================================================================ */
-html, body {
+body {
   margin: 0;
   padding: 0;
-  height: 100%;
-  font-family: "Helvetica", "Arial", sans-serif;
-  background: url('../../assets/monitor_background.png') no-repeat center center;
+  background-image: url('/assets/monitor_background.png');
   background-size: cover;
-  color: #222;
+  background-position: center;
+  background-repeat: no-repeat;
+  font-family: 'Segoe UI', sans-serif;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
 }
 
 /* ============================================================================
@@ -122,7 +128,7 @@ html, body {
    IT: Larghezza colonne (default IT)
 ============================================================================ */
 th:nth-child(1), td:nth-child(1) { width: 12%; } /* ROOM / AULA */
-th:nth-child(2), td:nth-child(2) { width: 16%; } /* TIME / ORA */
+th:nth-child(2), td:nth-child(2) { width: 20%; } /* TIME / ORA */
 th:nth-child(3), td:nth-child(3) { width: 45%; } /* LESSON / NOME LEZIONE */
 th:nth-child(4), td:nth-child(4) { width: 27%; } /* PROFESSOR */
 
@@ -131,7 +137,7 @@ th:nth-child(4), td:nth-child(4) { width: 27%; } /* PROFESSOR */
    IT: Larghezze colonne override per inglese
 ============================================================================ */
 body.lang-en th:nth-child(1),
-body.lang-en td:nth-child(1) { width: 15%; }
+body.lang-en td:nth-child(1) { width: 20%; }
 
 body.lang-en th:nth-child(2),
 body.lang-en td:nth-child(2) { width: 20%; }
@@ -146,26 +152,7 @@ body.lang-en td:nth-child(4) { width: 25%; }
    EN: Fixed UI elements: clock, date, floor name
    IT: Elementi fissi dell’interfaccia: orologio, data, piano
 ============================================================================ */
-.top-right {
-  position: absolute;
-  top: 1%;
-  right: 2%;
-  font-size: 3.2em;
-  color: #fff;
-}
+.top-right    { position: absolute; top: 1%;  right: 2%; font-size: 3.2em; font-weight: bold; color: #ffffff; }
+.bottom-right { position: absolute; bottom:2%; right: 2%; font-size: 2.2em; font-weight: bold; color: #ffffff; }
+.bottom-left  { position: absolute; bottom:2%; left: 2%; font-size: 2.2em; font-weight: bold; color: #ffffff; }
 
-.bottom-right {
-  position: absolute;
-  bottom: 2%;
-  right: 2%;
-  font-size: 2.2em;
-  color: #fff;
-}
-
-.bottom-left {
-  position: absolute;
-  bottom: 2%;
-  left: 2%;
-  font-size: 2.2em;
-  color: #fff;
-}

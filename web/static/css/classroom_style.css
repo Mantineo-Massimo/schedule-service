@@ -1,161 +1,190 @@
 /* ============================================================================
-   EN: Global reset and background
-   IT: Reset globale e sfondo a schermo intero
+   EN: Reset and fullscreen background
+   IT: Reset e sfondo a tutto schermo
 ============================================================================ */
-html, body {
+body {
   margin: 0;
   padding: 0;
-  height: 100%;
-  font-family: "Helvetica", "Arial", sans-serif;
-  background: url('/assets/monitor_background.png') no-repeat center center fixed;
+  background-image: url('/assets/monitor_background.png');
   background-size: cover;
-  color: #222;
+  background-position: center;
+  background-repeat: no-repeat;
+  font-family: 'Segoe UI', sans-serif;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
 }
 
 /* ============================================================================
-   EN: Container for lesson table
-   IT: Contenitore della tabella lezioni
+   EN: Main container for scrollable lesson table
+   IT: Contenitore principale per tabella lezioni scrollabile
 ============================================================================ */
 .table-container {
   position: absolute;
   top: 14%;
   left: 10%;
   right: 10%;
-  height: 65%;
+  bottom: 20%;
   background-color: rgba(255,255,255,0.95);
   padding: 30px 40px;
   border-radius: 25px;
   box-shadow: 0 0 25px rgba(0,0,0,0.2);
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  overflow-x: auto;
 }
 
 /* ============================================================================
-   EN: Table layout
-   IT: Struttura tabella
+   EN: Wrapper: header fixed, body scrollable
+   IT: Wrapper: intestazione fissa, corpo scrollabile
 ============================================================================ */
-table {
+.scroll-wrapper {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ============================================================================
+   EN: Table header (fixed)
+   IT: Intestazione tabella (fissa)
+============================================================================ */
+.scroll-header {
+  flex: 0 0 auto;
+  overflow: hidden;
+}
+.scroll-header table {
   width: 100%;
-  min-width: 700px;
-  height: 100%;
   border-collapse: collapse;
   font-size: 1.8em;
   table-layout: fixed;
 }
-
-/* ============================================================================
-   EN: Header and cell alignment
-   IT: Allineamento celle e intestazioni
-============================================================================ */
-thead th,
-tbody td {
-  vertical-align: middle;
+.scroll-header thead th {
+  background-color: #3c7cbb;
+  color: #fff;
+  padding: 14px 18px;
   text-align: center;
+  vertical-align: middle;
+  border-right: 1px solid #ccc;
+}
+.scroll-header thead th:last-child {
+  border-right: none;
 }
 
-/* EN: Align lesson name and professor name to the left
-   IT: Allinea a sinistra nome lezione e docente
+/* ============================================================================
+   EN: Scrollable body
+   IT: Corpo scrollabile
 ============================================================================ */
-tbody td:nth-child(2),
-tbody td:nth-child(4) {
+.scroll-body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  scrollbar-width: none; /* Firefox */
+}
+.scroll-body::-webkit-scrollbar {
+  display: none;         /* Chrome/Safari */
+}
+.scroll-body table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 1.8em;
+  table-layout: fixed;
+}
+.scroll-body tbody td {
+  padding: 14px 18px;
+  text-align: center;
+  vertical-align: middle;
+  border-right: 1px solid #ccc;
+}
+.scroll-body tbody td:last-child {
+  border-right: none;
+}
+
+/* ============================================================================
+   EN: Justify only the Lesson Name column
+   IT: Giustifica solo la colonna "NOME LEZIONE"
+============================================================================ */
+.scroll-body tbody td:nth-child(2) {
   text-align: justify;
   text-justify: inter-word;
   text-align-last: left;
 }
 
 /* ============================================================================
-   EN: Cell padding and column borders
-   IT: Padding celle e bordi tra colonne
+   EN: Alternating row backgrounds
+   IT: Colori alternati tra le righe
 ============================================================================ */
-th, td {
-  padding: 14px 18px;
-  border-right: 1px solid #ccc;
-}
-th:last-child,
-td:last-child {
-  border-right: none;
-}
+.scroll-body tr:nth-child(even) { background-color: #f0f0f0; }
+.scroll-body tr:nth-child(odd)  { background-color: #e6f2ff; }
 
 /* ============================================================================
-   EN: Header styling and row striping
-   IT: Stile intestazione e righe alternate
+   EN: Column widths (default IT)
+   IT: Larghezza colonne (default IT)
 ============================================================================ */
-th {
-  background-color: #3c7cbb;
-  color: #fff;
-}
-tr:nth-child(even) { background-color: #f0f0f0; }
-tr:nth-child(odd)  { background-color: #e6f2ff; }
-
-/* ============================================================================
-   EN: Column widths (IT default)
-   IT: Larghezza colonne (italiano predefinito)
-============================================================================ */
-th:nth-child(1), td:nth-child(1) { width: 18%; } /* TIME / ORA */
+th:nth-child(1), td:nth-child(1) { width: 20%; } /* TIME / ORA */
 th:nth-child(2), td:nth-child(2) { width: 37%; } /* LESSON / LEZIONE */
 th:nth-child(3), td:nth-child(3) { width: 15%; } /* STATUS / STATO */
-th:nth-child(4), td:nth-child(4) { width: 30%; } /* PROFESSOR */
+th:nth-child(4), td:nth-child(4) { width: 20%; } /* PROFESSOR / PROFESSORE */
 
 /* ============================================================================
-   EN: Status indicator (dot + label)
-   IT: Indicatore stato (pallino + testo)
-============================================================================ */
-.status-indicator {
-  vertical-align: middle;
-  padding: 0 6px;
-  white-space: nowrap;
-}
-.status-dot {
-  display: inline-block;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  margin-right: 6px;
-}
-.status-soon  { background-color: green; }
-.status-live  { background-color: orange; }
-.status-ended { background-color: red; }
-
-/* ============================================================================
-   EN: Fixed UI elements (clock, classroom name, date)
-   IT: Elementi UI fissi (orologio, nome aula, data)
-============================================================================ */
-.top-right {
-  position: absolute;
-  top: 1%;
-  right: 2%;
-  font-size: 3.2em;
-  color: #fff;
-}
-.bottom-right {
-  position: absolute;
-  bottom: 2%;
-  right: 2%;
-  font-size: 2.2em;
-  color: #fff;
-}
-.bottom-left {
-  position: absolute;
-  bottom: 2%;
-  left: 2%;
-  font-size: 2.2em;
-  color: #fff;
-}
-
-/* ============================================================================
-   EN: Column width overrides for English
-   IT: Override larghezze colonne per lingua inglese
+   EN: Column widths override for EN
+   IT: Override larghezze colonne per inglese
 ============================================================================ */
 body.lang-en th:nth-child(1),
-body.lang-en td:nth-child(1) { width: 20%; }
-
+body.lang-en td:nth-child(1) { width: 25%; }
 body.lang-en th:nth-child(2),
 body.lang-en td:nth-child(2) { width: 45%; }
 
-body.lang-en th:nth-child(3),
-body.lang-en td:nth-child(3) { width: 15%; }
+/* ============================================================================
+   EN: Status indicator container
+   IT: Contenitore indicatore stato (dot + testo centrati)
+============================================================================ */
+.status-indicator {
+  align-items: center;        
+  justify-content: center;    
+  white-space: nowrap;     
+}
 
-body.lang-en th:nth-child(4),
-body.lang-en td:nth-child(4) { width: 20%; }
+/* ============================================================================
+   EN: The colored dot with inner fill, margin, gap, and colored ring
+   IT: Pallino con riempimento interno, spazio vuoto e bordo colorato
+============================================================================ */
+.status-dot {
+  position: relative;
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  background-color: currentColor;  
+  border-radius: 50%;
+  margin-bottom: 3px;
+}
+/* outer ring */
+.status-dot::after {
+  content: '';
+  position: absolute;
+  top: -7px; left: -7px;
+  width: calc(100% + 14px);
+  height: calc(100% + 14px);
+  border: 3px solid currentColor;
+  border-radius: 50%;
+  background: transparent;
+  box-sizing: border-box;
+  pointer-events: none;
+
+}
+
+/* ============================================================================
+   EN/IT: State colors (applied to both dot and ring)
+============================================================================ */
+.status-soon  { color: green;  } /* dot fill + ring in green */
+.status-live  { color: orange; } /* dot fill + ring in orange */
+.status-ended { color: red;    } /* dot fill + ring in red */
+
+/* ============================================================================
+   EN: Fixed UI elements (clock, classroom name, date)
+   IT: Elementi fissi (orologio, nome aula, data)
+============================================================================ */
+.top-right    { position: absolute; top: 1%;  right: 2%; font-size: 3.2em; font-weight: bold; color: #ffffff; }
+.bottom-right { position: absolute; bottom: 2%; right: 2%; font-size: 2.2em; font-weight: bold; color: #ffffff; }
+.bottom-left  { position: absolute; bottom: 2%; left: 2%;  font-size: 2.2em; font-weight: bold; color: #ffffff; }

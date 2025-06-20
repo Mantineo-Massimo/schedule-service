@@ -14,21 +14,32 @@ IT: Template per la vista di un'aula.
 </head>
 <body>
   <!-- EN/IT: Table of lessons  / Tabella delle lezioni -->
-  <div class="table-container">
-    <table>
-      <thead>
-        <tr>
-          <th>TIME</th>
-          <th>LESSON</th>
-          <th>STATUS</th>
-          <th>PROFESSOR</th>
-        </tr>
-      </thead>
-      <tbody id="lesson-body">
-        <tr><td colspan="4">Loading...</td></tr>
-      </tbody>
-    </table>
+<div class="table-container">
+  <div class="scroll-wrapper">
+    <!-- header fisso -->
+    <div class="scroll-header">
+      <table>
+        <thead>
+          <tr>
+            <th>TIME</th>
+            <th>LESSON NAME</th>
+            <th>STATUS</th>
+            <th>PROFESSOR</th>
+          </tr>
+        </thead>
+      </table>
+    </div>
+    <!-- corpo scrollabile -->
+    <div class="scroll-body">
+      <table>
+        <tbody id="lesson-body">
+          <tr><td colspan="4">Loading...</td></tr>
+        </tbody>
+      </table>
+    </div>
   </div>
+</div>
+
 
   <!-- EN/IT: Clock, class name, date / Orologio, nome aula, data -->
   <div id="clock" class="top-right"></div>
