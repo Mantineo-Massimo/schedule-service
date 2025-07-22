@@ -22,4 +22,4 @@ COPY . .
 EXPOSE 8080
 
 # EN/IT: Start command with production server / Comando di avvio con server di produzione
-CMD ["gunicorn", "--bind", "0.0.0.0:8080", "run:app"]
+CMD ["gunicorn", "--worker-class", "gevent", "--bind", "0.0.0.0:8080", "--timeout", "360", "run:app"]

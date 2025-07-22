@@ -1,4 +1,8 @@
 # app/routes.py
+"""
+EN: Definition of HTTP routes for the Info_Kiosk_Display service.
+IT: Definizione delle rotte HTTP per il servizio Info_Kiosk_Display.
+"""
 
 import os
 from flask import request, jsonify, send_file, current_app as app
@@ -49,21 +53,19 @@ def register_routes(app):
 
             result = []
             for l in classes:
-                # EN/IT: Safe extraction of first docente (instructor)
-                docenti_list = l.get("docenti") or []
-                docente = docenti_list[0] if docenti_list else {}
-                nome    = docente.get("nome", "").strip()
-                cognome = docente.get("cognome", "").strip()
-                instructor = f"{nome} {cognome}".strip() or "N/A"
+                instructors   = l.get("docenti") or []
+                inst          = instructors[0] if instructors else {}
+                nome          = inst.get("nome","").strip()
+                cognome       = inst.get("cognome","").strip()
+                instructor    = f"{nome} {cognome}".strip() or "N/A"
 
-                # EN/IT: Safe extraction of first aula (classroom)
-                aule_list      = l.get("aule") or []
-                aula_info      = aule_list[0] if aule_list else {}
-                classroom_name = aula_info.get("descrizione", "N/A")
+                rooms         = l.get("aule") or []
+                room_info     = rooms[0] if rooms else {}
+                classroom_name = room_info.get("descrizione","N/A")
 
                 resp = LessonResponse(
-                    start_time     = l.get("dataInizio", "N/A"),
-                    end_time       = l.get("dataFine",   "N/A"),
+                    start_time     = l.get("dataInizio","N/A"),
+                    end_time       = l.get("dataFine","N/A"),
                     lesson_name    = l.get("evento",{}) \
                                        .get("dettagliDidattici",[{}])[0] \
                                        .get("nome","N/A"),
@@ -77,25 +79,40 @@ def register_routes(app):
         except ValidationError as ve:
             return jsonify({"error": ve.errors()}), 400
 
-    @app.route('/floor/<floor>', methods=['GET'])
-    def floor_view(floor):
-        floor_key = floor.lower()
-        if floor_key not in FLOOR_CLASSROOMS:
+    # =========================================================================
+    # EN: GET /floor/<building>/<floor>?date=YYYY-MM-DD
+    #    - Returns lessons for all classrooms on the given floor of the building.
+    #
+    # IT: GET /floor/<building>/<floor>?date=YYYY-MM-DD
+    #    - Restituisce lezioni per tutte le aule di un piano di un edificio.
+    # =========================================================================
+    @app.route('/floor/<building>/<floor>', methods=['GET'])
+    def floor_view(building, floor):
+        # permetti valori negativi come “-1”
+        try:
+            floor_num = int(floor)
+        except ValueError:
             return jsonify({"error": "Invalid floor"}), 400
 
-        date    = request.args.get("date")
-        lessons = get_active_or_soon_lessons(floor_key, date)
+        bkey = building.strip()
+        if bkey not in FLOOR_CLASSROOMS:
+            return jsonify({"error": "Invalid building"}), 400
+
+        floor_map = FLOOR_CLASSROOMS[bkey]
+        if floor_num not in floor_map:
+            return jsonify({"error": "Invalid floor for this building"}), 400
+
+        date = request.args.get("date")
+        lessons = get_active_or_soon_lessons(bkey, floor_num, date)
         return jsonify(lessons)
 
     @app.route('/assets/<path:filename>')
     def serve_assets(filename):
         asset_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'web', 'assets'))
         file_path = os.path.join(asset_dir, filename)
-
         if not os.path.isfile(file_path):
             app.logger.error(f"Asset not found: {file_path}")
             return jsonify({"error": "File not found"}), 404
-
         return send_file(file_path)
 
     @app.route('/favicon.ico')

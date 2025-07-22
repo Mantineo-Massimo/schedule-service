@@ -1,22 +1,16 @@
-<!--
-EN: Template for classroom view.
-IT: Template per la vista di un'aula.
--->
-
 <!DOCTYPE html>
 <html lang="it">
 <head>
   <meta charset="UTF-8" />
+  <meta http-equiv="refresh" content="60">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Classroom Schedule</title>
   <link rel="icon" href="../assets/favicon.ico" type="image/x-icon" />
   <link rel="stylesheet" href="../static/css/classroom_style.css" />
 </head>
 <body>
-  <!-- EN/IT: Table of lessons  / Tabella delle lezioni -->
-<div class="table-container">
+  <div class="table-container">
   <div class="scroll-wrapper">
-    <!-- header fisso -->
     <div class="scroll-header">
       <table>
         <thead>
@@ -29,7 +23,6 @@ IT: Template per la vista di un'aula.
         </thead>
       </table>
     </div>
-    <!-- corpo scrollabile -->
     <div class="scroll-body">
       <table>
         <tbody id="lesson-body">
@@ -41,7 +34,6 @@ IT: Template per la vista di un'aula.
 </div>
 
 
-  <!-- EN/IT: Clock, class name, date / Orologio, nome aula, data -->
   <div id="clock" class="top-right"></div>
   <div id="classroom-name" class="bottom-right"></div>
   <div id="current-date" class="bottom-left"></div>

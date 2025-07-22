@@ -1,7 +1,7 @@
 /**
  * EN: Classroom view script with fixed header and auto‐scrolling body.
  * IT: Script per la vista delle lezioni in aula con intestazione fissa
- *     e corpo scorrevole automaticamente a boomerang.
+ * e corpo scorrevole automaticamente a boomerang.
  */
 
 ;(function () {
@@ -116,7 +116,12 @@
     lessonBody.innerHTML = '';
     if (!data.length || data[0].message === 'No classes available') {
       lessonBody.innerHTML = `
-        <tr><td colspan="4">${translations[currentLang].noClasses}</td></tr>
+        <tr>
+          <td colspan="4">
+            <span class="lang-it">${translations.it.noClasses}</span>
+            <span class="lang-en">${translations.en.noClasses}</span>
+          </td>
+        </tr>
       `;
       return;
     }
@@ -125,37 +130,32 @@
       const s  = new Date(les.start_time),
             e  = new Date(les.end_time),
             tm = pad2(s.getHours())+':'+pad2(s.getMinutes())
-               +' – '+pad2(e.getHours())+':'+pad2(e.getMinutes());
+              +' – '+pad2(e.getHours())+':'+pad2(e.getMinutes());
 
       const row = document.createElement('tr');
 
-      // ORA / TIME
-      const tdTime = document.createElement('td');
-      tdTime.textContent = tm;
-      row.appendChild(tdTime);
+      // Funzione helper per creare gli span bilingue
+      const createLangSpan = (key, path = 'status') => 
+        `<span class="lang-it">${translations.it[path][key]}</span><span class="lang-en">${translations.en[path][key]}</span>`;
 
-      // NOME LEZIONE / LESSON NAME
-      const tdName = document.createElement('td');
-      tdName.style.textAlign = 'left';
-      tdName.textContent = les.lesson_name || 'N/A';
-      row.appendChild(tdName);
+      // Calcola la classe e il testo per lo stato
+      const statusClass = getStatusClass(les.start_time, les.end_time);
+      let statusKey;
+      if (statusClass === 'status-soon') statusKey = 'soon';
+      else if (statusClass === 'status-live') statusKey = 'live';
+      else statusKey = 'ended';
 
-      // STATO / STATUS
-      const tdStatus = document.createElement('td');
-      tdStatus.className = 'status-indicator';
-      const dot = document.createElement('span');
-      dot.className = 'status-dot ' + getStatusClass(les.start_time, les.end_time);
-      tdStatus.appendChild(dot);
-      const label = document.createTextNode(' ' + computeStatus(les.start_time, les.end_time));
-      tdStatus.appendChild(label);
-      row.appendChild(tdStatus);
-
-      // PROFESSORE / PROFESSOR
-      const tdProf = document.createElement('td');
-      tdProf.style.textAlign = 'left';
-      tdProf.textContent = les.instructor || 'N/A';
-      row.appendChild(tdProf);
-
+      // Usiamo innerHTML per inserire la struttura con gli SPAN
+      row.innerHTML = `
+        <td>${tm}</td>
+        <td style="text-align: left;">${les.lesson_name || 'N/A'}</td>
+        <td class="status-indicator">
+          <span class="status-dot ${statusClass}"></span>
+          ${createLangSpan(statusKey, 'status')}
+        </td>
+        <td style="text-align: left;">${les.instructor || 'N/A'}</td>
+      `;
+      
       lessonBody.appendChild(row);
     });
   }
@@ -235,26 +235,32 @@
   // Toggle language / Cambio lingua periodico
   // ==========================================================================
   function toggleLanguage() {
+    // 1. Aggiorna l'indice e la lingua corrente
     langIndex   = 1 - langIndex;
     currentLang = LANGS[langIndex];
+
+    // 2. Cambia la classe sul body. Il CSS farà tutta la magia!
     document.body.classList.toggle('lang-it');
     document.body.classList.toggle('lang-en');
+    
+    // 3. Aggiorna gli elementi fuori dalla tabella che non sono stati creati con gli span
+    // NOTA: Queste operazioni sono molto leggere
     updateHeaders();
     updateCurrentDate();
-    updateClock();
-    renderLessons(lastData);
+    
+    // NON chiamiamo più renderLessons()!
   }
 
   // ==========================================================================
   // Initialization / Inizializzazione
   // ==========================================================================
-  document.body.classList.add('lang-it');
+  document.body.classList.add('lang-it'); // Assicurati che parta con la classe IT
   fetchLessons();
   updateClock();
-  updateCurrentDate();
+  // updateCurrentDate(); // Verrà chiamato da fetchLessons la prima volta
 
   // periodic updates / aggiornamenti periodici
-  setInterval(updateClock,   1000);
-  setInterval(fetchLessons, 60000);
-  setInterval(toggleLanguage,15000);
+  setInterval(updateClock,    1000);
+  // setInterval(fetchLessons, 60000); // Giustamente disabilitato
+  setInterval(toggleLanguage, 15000); // Ora questa funzione è super leggera!
 })();

@@ -1,21 +1,16 @@
-<!--
-EN: Template for floor view display.
-IT: Template per visualizzazione delle lezioni di un piano.
--->
-
 <!DOCTYPE html>
 <html lang="it">
 <head>
   <meta charset="UTF-8" />
+  <meta http-equiv="refresh" content="60">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Floor 0 Schedule</title>
-  <link rel="icon" href="../assets/favicon.ico" type="image/x-icon" />
+  <title>Floor Schedule</title>
+  <link rel="icon" href="../assets/favicon.ico" />
   <link rel="stylesheet" href="../static/css/floor_style.css" />
 </head>
 <body>
   <div class="table-container">
     <div class="scroll-wrapper">
-      <!-- EN/IT: Fixed header /Intestazione fissa -->
       <div class="scroll-header">
         <table>
           <thead>
@@ -28,8 +23,6 @@ IT: Template per visualizzazione delle lezioni di un piano.
           </thead>
         </table>
       </div>
-
-      <!-- EN/IT: Sliding body / Corpo scorrevole -->
       <div class="scroll-body">
         <table>
           <tbody id="lesson-body">
@@ -40,10 +33,9 @@ IT: Template per visualizzazione delle lezioni di un piano.
     </div>
   </div>
 
-  <!-- EN/IT: Clock, date, flat label / Orologio, data, etichetta piano -->
-  <div id="clock" class="top-right"></div>
+  <div id="clock"        class="top-right"></div>
   <div id="current-date" class="bottom-left"></div>
-  <div id="floor-label" class="bottom-right"></div>
+  <div id="floor-label"  class="bottom-right"></div>
 
   <script src="../static/js/floor_script.js"></script>
 </body>

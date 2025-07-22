@@ -49,10 +49,8 @@ lession-kiosk-display/
 │   │       └── floor_script.js       # Script visualizzazione piano
 │   ├── classroom/
 │   │   └── index.html                # Visualizzazione per singola aula
-│   └── floor/                        # Visualizzazioni per piano
-│       ├── floor0.html               # Piano 0
-│       ├── floor1.html               # Piano 1
-│       └── floorM1.html              # Piano -1
+│   └── floor/                        
+│       └── floor.html                # Visualizzazioni per piano
 │
 ├── requirements.txt                  # Dipendenze Python
 └── Dockerfile                        # Dockerfile produzione
