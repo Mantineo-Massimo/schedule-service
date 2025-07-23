@@ -1,135 +1,97 @@
-# lession-kiosk-display
+# Schedule Service
 
-![Python](https://img.shields.io/badge/python-3.11-blue)
-![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)
-![Status](https://img.shields.io/badge/status-production--ready-brightgreen)
-![UI](https://img.shields.io/badge/interface-responsive-lightgrey)
-![Docker](https://img.shields.io/badge/container-Docker--ready-blue)
+![Python](https://img.shields.io/badge/Python-3.11-blue.svg)
+![Flask](https://img.shields.io/badge/Flask-2.3-black?logo=flask)
+![Pydantic](https://img.shields.io/badge/Pydantic-v2-blue)
+![Docker](https://img.shields.io/badge/Docker-Ready-blue?logo=docker)
+![Status](https://img.shields.io/badge/Status-Production-brightgreen)
 
+Un microservizio per visualizzare in tempo reale gli orari delle lezioni universitarie, sia per singole aule che per interi piani di un edificio.
 
-> EN: A digital signage system to display university classroom and floor schedules in real time.  
-> IT: Un sistema di digital signage per visualizzare in tempo reale gli orari delle lezioni per aula e per piano.
-
----
-
-## 🧩 Description / Descrizione
-
-**EN:**  
-lession-kiosk-display is a Flask-based web application that dynamically shows current and upcoming lessons in classrooms and across entire floors of a university building.  
-It uses official API data (e.g., from Cineca/Unime) and supports bilingual display (IT/EN) with automatic language switching, responsive UI, and Docker-based deployment.
-
-**IT:**  
-lession-kiosk-display è un'applicazione web basata su Flask che mostra in tempo reale le lezioni in corso o imminenti per singole aule o per interi piani.  
-Utilizza dati ufficiali (es. API Cineca/Unime) e supporta visualizzazione bilingue (IT/EN), interfaccia responsive e distribuzione via Docker.
+![Showcase del Servizio](./docs/schedule-showcase.png)
 
 ---
 
-## 🏗️ Project Structure / Struttura del progetto
+## Descrizione
 
-```
-lession-kiosk-display/
-├── app/                              # Backend Flask API
-│   ├── __init__.py                   # Inizializzazione app Flask
-│   ├── config.py                     # Configurazione API base
-│   ├── constants.py                  # Mappatura ID aula/piani
-│   ├── models.py                     # Schemi Pydantic, cache
-│   ├── routes.py                     # Rotte Flask (API /lessons, /floor)
-│   └── services.py                   # Logica di fetch/split lezioni
-│
-├── web/                              # Frontend statico
-│   ├── assets/                       # Asset statici (immagini, icone)
-│   │   ├── monitor_background.png
-│   │   └── favicon.ico
-│   ├── static/
-│   │   ├── css/
-│   │   │   ├── classroom_style.css   # Stile per visualizzazione aula
-│   │   │   └── floor_style.css       # Stile per visualizzazione piano
-│   │   └── js/
-│   │       ├── classroom_script.js   # Script visualizzazione aula
-│   │       └── floor_script.js       # Script visualizzazione piano
-│   ├── classroom/
-│   │   └── index.html                # Visualizzazione per singola aula
-│   └── floor/                        
-│       └── floor.html                # Visualizzazioni per piano
-│
-├── requirements.txt                  # Dipendenze Python
-└── Dockerfile                        # Dockerfile produzione
-```
+Lo **Schedule Service** si collega alle API ufficiali dell'ateneo (es. CINECA) per recuperare e mostrare gli orari delle lezioni. Fornisce due visualizzazioni ottimizzate per display di digital signage:
+
+1.  **Vista Aula (`classroom_view.html`)**: Mostra il palinsesto giornaliero di una singola aula, evidenziando lo stato di ogni lezione (in corso, terminata, futura).
+2.  **Vista Piano (`floor_view.html`)**: Aggrega gli orari di tutte le aule di un determinato piano, fornendo una panoramica completa.
+
+Il servizio include un sistema di cache per minimizzare le chiamate all'API esterna e garantire una risposta rapida.
 
 ---
 
-## 🚀 Quick Start / Avvio rapido
+## Funzionalità
 
-### ▶️ With Docker / Con Docker
-
-```bash
-# Build the image
-docker build -t info-kiosk .
-
-# Run the container on port 8080
-docker run -p 8080:8080 info-kiosk
-```
-
-### ▶️ Without Docker / Senza Docker
-
-```bash
-# Create a virtual environment (optional but recommended)
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Run the app (development mode)
-python run.py
-```
+* **Vista Aula & Vista Piano**: Due modalità di visualizzazione per esigenze specifiche e generali.
+* **Dati in Tempo Reale**: Si collega a API esterne per mostrare sempre gli orari più aggiornati.
+* **Sistema di Cache**: Una cache in-memoria riduce il carico sull'API esterna e migliora le performance.
+* **Supporto Bilingue**: Passa automaticamente da Italiano a Inglese per tutte le etichette.
+* **Scorrimento Automatico**: Le tabelle con molte lezioni scorrono automaticamente per garantire la visibilità di tutti i contenuti.
+* **Servizio Dockerizzato**: Pronto per il deployment come container indipendente e gestito tramite Docker Compose.
 
 ---
 
-## 📦 API Endpoints
+## Setup & Configurazione
 
-| Endpoint              | Method | Description (EN)                     | Descrizione (IT)                            |
-|----------------------|--------|--------------------------------------|---------------------------------------------|
-| `/`                  | GET    | Homepage                             | Pagina principale                           |
-| `/lessons`           | POST   | Get lessons for a classroom          | Ottiene lezioni per aula                    |
-| `/floor/<floor>`     | GET    | Get lessons for a floor              | Ottiene lezioni per piano                   |
-| `/assets/<filename>` | GET    | Serve static asset (image/icon)      | Restituisce asset statici                   |
+La configurazione è minima.
+1.  Nella cartella `schedule-service`, copia il file `.env.example` e rinominalo in `.env`.
+2.  Il file contiene una variabile, `LESSON_API_BASE_URL`. Il valore di default è già impostato per l'Università di Messina, ma puoi cambiarlo se necessario.
 
 ---
 
-## 🌍 Parameters / Parametri supportati
+## Avvio
 
-### Classroom view (`classroom/index.html?classroom=...&building=...`)
+Questo servizio è parte della `DigitalSignageSuite` e viene avviato tramite il file `docker-compose.yml` nella directory principale.
 
-- `classroom` – ID aula
-- `building` – ID edificio
-- `period` – `morning`, `afternoon` o `all`
-- `date` – Data nel formato `YYYY-MM-DD` (opzionale)
-
-### Floor view (`floor/floorNUMBER.html?date=YYYY-MM-DD`)
-
-- `date` – Data nel formato `YYYY-MM-DD` (opzionale)
-
-- 🔗 **Classroom view example**: [http://localhost:8080/static/classroom/index.html?classroom=CODE&building=CODE&date=DATE&period=PERIOD](http://localhost:8080/static/classroom/index.html?classroom=CODE&building=CODE&date=DATE&period=PERIOD)
-- 🔗 **Floor**: [http://172.16.32.13:5000/static/floor/floorNUMBER.html?date=2DATE](http://172.16.32.13:5000/static/floor/floorNUMBER.html?date=2DATE)
----
-
-## 📚 Technologies / Tecnologie utilizzate
-
-- **Backend**: Python 3.11, Flask, Gunicorn, Pydantic, Requests
-- **Frontend**: HTML5, CSS3, Vanilla JavaScript
-- **Deployment**: Docker
+1.  Assicurati di essere nella cartella `DigitalSignageSuite`.
+2.  Esegui il comando:
+    ```bash
+    docker compose up --build -d
+    ```
+3.  Il servizio sarà accessibile sulla porta **8081**.
 
 ---
 
-## 👥 Authors / Autori
+## Utilizzo e URL di Esempio
 
-- **Massimo Mantineo** – Università di Messina  
-- **Adeebullah Hamidy** – Università di Messina  
+Per utilizzare il servizio, costruisci un URL specificando la vista e i parametri desiderati.
+
+### Vista Aula (`classroom_view.html`)
+
+Mostra l'orario di una singola aula.
+
+* **URL:** `http://localhost:8081/views/classroom_view.html?classroom=5f775da9bb0c1600171ae370&building=5f6cb2c183c80e0018f4d46&date=2025-07-23`
+
+* **Parametri Disponibili:**
+
+| Parametro     | Descrizione                                                               | Esempio                          |
+| :------------ | :------------------------------------------------------------------------ | :------------------------------- |
+| `classroom`   | **(Obbligatorio)** L'ID tecnico dell'aula.                                | `5f775da9bb0c1600171ae370`       |
+| `building`    | **(Obbligatorio)** L'ID tecnico dell'edificio a cui appartiene l'aula.    | `5f6cb2c183c80e0018f4d46`       |
+| `date`        | (Opzionale) La data per cui mostrare l'orario, in formato `YYYY-MM-DD`.   | `2025-07-23`                     |
+| `period`      | (Opzionale) Filtra per `morning`, `afternoon` o `all` (default).          | `period=morning`                 |
+
+### Vista Piano (`floor_view.html`)
+
+Mostra l'orario aggregato di un intero piano.
+
+* **URL:** `http://localhost:8081/views/floor_view.html?floor=1&building=A&date=2025-07-23`
+
+* **Parametri Disponibili:**
+
+| Parametro  | Descrizione                                                              | Esempio             |
+| :--------- | :----------------------------------------------------------------------- | :------------------ |
+| `floor`    | **(Obbligatorio)** Il numero del piano (es. `-1`, `0`, `1`, `2`).          | `1`                 |
+| `building` | **(Obbligatorio)** La chiave breve dell'edificio (`A`, `B`, `SBA`).       | `A`                 |
+| `date`     | (Opzionale) La data per cui mostrare l'orario, in formato `YYYY-MM-DD`.  | `2025-07-23`        |
 
 ---
 
-## 📄 License / Licenza
+## Tecnologie Utilizzate
 
-> This project is released under the [MIT License](LICENSE).  
-> Questo progetto è distribuito sotto licenza [Licenza MIT](LICENSE).
+* **Backend**: Python, Flask, Gunicorn, Pydantic
+* **Frontend**: HTML5, CSS3, JavaScript
+* **Deployment**: Docker

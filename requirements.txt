@@ -1,11 +1,6 @@
-# ==============================================================================
-# EN: Python dependencies for lession-kiosk-display
-# IT: Dipendenze Python per lession-kiosk-display
-# ==============================================================================
-
 Flask==2.3.3
 Flask-Cors==4.0.0
 gunicorn==21.2.0
 requests==2.31.0
 pydantic==2.6.4
-gevent
+python-dotenv==1.0.0

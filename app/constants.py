@@ -1,12 +1,11 @@
-# app/constants.py
-
 """
-EN: Mapping of buildings to their floors and their classrooms (chat_id, building_id).
-IT: Mappatura degli edifici ai loro piani e alle aule corrispondenti (chat_id, building_id).
+Contains static mappings for buildings, floors, and classrooms.
 """
 
-FLOOR_CLASSROOMS = {
-    "EdificioA": {
+# Maps building keys to their floors and the classrooms on each floor.
+# Format: { "BuildingKey": { floor_number: [ (classroom_id, building_id), ... ] } }
+BUILDING_FLOOR_MAP = {
+    "A": {
         1: [
             ("5f775da9bb0c1600171ae370", "5f6cb2c183c80e0018f4d46"),  # A-1-1
             ("5f778ceabab2280018354c66", "5f6cb2c183c80e0018f4d46"),  # A-1-2
@@ -40,7 +39,7 @@ FLOOR_CLASSROOMS = {
         ],
     },
 
-    "EdificioB": {
+    "B": {
         1: [
             ("6145bffa0058d500181757ed", "5f6cb2c183c80e0018f4d476"),  # B-1-1
             ("6145c03aa58ea000182c799d", "5f6cb2c183c80e0018f4d476"),  # B-1-2
@@ -70,7 +69,7 @@ FLOOR_CLASSROOMS = {
         ]
     },
 
-    "EdificioSBA": {
+    "SBA": {
         0: [
             ("5f6cb2c683c80e0018f4d5f5", "5f6cb2c183c80e0018f4d474"),  # SBA-T-1
             ("5f6cb2c683c80e0018f4d5ef", "5f6cb2c183c80e0018f4d474"),  # SBA-T-2A-B
@@ -95,7 +94,8 @@ FLOOR_CLASSROOMS = {
     }
 }
 
-CLASSROOM_DESCRIPTIONS = {
+# Maps classroom IDs to their human-readable names for display purposes.
+CLASSROOM_ID_TO_NAME = {
     # Edificio A, piano 1
     "5f775da9bb0c1600171ae370": "A-1-1",
     "5f778ceabab2280018354c66": "A-1-2",

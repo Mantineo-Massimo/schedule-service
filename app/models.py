@@ -1,55 +1,42 @@
 """
-EN: Data models and caching utilities.
-IT: Modelli dati e funzioni di cache.
+Data models for request/response validation and in-memory caching utilities.
 """
-
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, List, Tuple, Any
 from datetime import datetime, timedelta
+from flask import current_app
 
 class LessonRequest(BaseModel):
-    """
-    EN: Input schema for lesson requests.
-    IT: Schema input per richieste lezione.
-    """
+    """Input schema for a lesson request."""
     classroom: str
     building: str
     date: Optional[str] = None
-    period: Optional[str] = "all"
+    period: Optional[str] = Field(default="all", pattern="^(morning|afternoon|all)$")
 
 class LessonResponse(BaseModel):
-    """
-    EN: Output schema for a single lesson.
-    IT: Schema output per una lezione.
-    """
+    """Output schema for a single lesson."""
     start_time: str
     end_time: str
     lesson_name: str
     instructor: str
     classroom_name: str
 
-# EN/IT: In-memory cache dictionary / Dizionario della cache in memoria
-_cache = {}
+# --- In-Memory Cache ---
+_cache: dict[str, Tuple[Any, datetime]] = {}
 
-def get_from_cache(classroom: str, building: str, date: str):
-    """
-    EN: Return cached data if still valid.
-    IT: Ritorna dati dalla cache se validi.
-    """
-    key = f"{classroom}_{building}_{date}"
+def get_from_cache(key: str) -> Optional[Any]:
+    """Returns data from the cache if it exists and has not expired."""
     item = _cache.get(key)
     if item:
-        data, expire = item
-        if expire > datetime.now():
+        data, expiration = item
+        if expiration > datetime.now():
             return data
+        # Remove expired item
         del _cache[key]
     return None
 
-def set_in_cache(classroom: str, building: str, date: str, data, ttl: int = 15):
-    """
-    EN: Save data to cache with expiration.
-    IT: Salva dati in cache con scadenza.
-    """
-    key = f"{classroom}_{building}_{date}"
-    expire = datetime.now() + timedelta(minutes=ttl)
-    _cache[key] = (data, expire)
+def set_in_cache(key: str, data: Any):
+    """Saves data to the cache with a configured Time-To-Live (TTL)."""
+    ttl_minutes = current_app.config.get('CACHE_TTL_MINUTES', 15)
+    expiration = datetime.now() + timedelta(minutes=ttl_minutes)
+    _cache[key] = (data, expiration)

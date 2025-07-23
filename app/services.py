@@ -1,163 +1,101 @@
-# app/services.py
-
 """
-EN: Business logic for lesson data: fetching, caching, and grouping.
-IT: Logica per la gestione delle lezioni: fetch, cache e aggregazione.
+Business logic for fetching, processing, and caching lesson data.
 """
-
 import requests
 from requests.exceptions import RequestException
 from datetime import datetime, time
+from typing import List, Dict, Any, Optional
+from flask import current_app
 
-from app.config import BASE_URL
-from app.models import get_from_cache, set_in_cache
-from app.constants import FLOOR_CLASSROOMS, CLASSROOM_DESCRIPTIONS
+from .models import get_from_cache, set_in_cache
+from .constants import BUILDING_FLOOR_MAP, CLASSROOM_ID_TO_NAME # Assicurati che CLASSROOM_ID_TO_NAME sia importato
 
+def _make_api_request(url: str) -> List[Dict[str, Any]]:
+    # ... (funzione non modificata)
+    try:
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+        return response.json()
+    except RequestException as e:
+        current_app.logger.error(f"API request to {url} failed: {e}")
+        return []
 
-def _first_or_default(lst, default=None):
-    """
-    EN: Returns the first element of a list or a default value.
-    IT: Ritorna il primo elemento di una lista o un valore di default.
-    """
-    return lst[0] if isinstance(lst, list) and lst else (default or {})
+def _parse_lesson(lesson_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    # ... (funzione non modificata)
+    try:
+        start_time_str = lesson_data.get("dataInizio", "")
+        end_time_str = lesson_data.get("dataFine", "")
+        
+        event = lesson_data.get("evento", {})
+        details = (event.get("dettagliDidattici") or [{}])[0]
+        lesson_name = details.get("nome", "N/A")
+        
+        instructors = lesson_data.get("docenti", [])
+        instructor_info = instructors[0] if instructors else {}
+        first_name = instructor_info.get("nome", "").strip()
+        last_name = instructor_info.get("cognome", "").strip()
+        instructor = f"{first_name} {last_name}".strip() or "N/A"
 
+        classrooms = lesson_data.get("aule", [])
+        room_info = classrooms[0] if classrooms else {}
+        # MODIFICA: Usa la mappa dei nomi come fallback se la descrizione API manca
+        api_classroom_name = room_info.get("descrizione")
+        classroom_id = room_info.get("id")
+        classroom_name = api_classroom_name or CLASSROOM_ID_TO_NAME.get(classroom_id, "Unknown Room")
 
-class LessonLooper:
-    """
-    EN: Helper for fetching and splitting lesson data into morning/afternoon.
-    IT: Helper per recuperare e suddividere le lezioni in mattina/pomeriggio.
-    """
+        return {
+            "start_time": start_time_str,
+            "end_time": end_time_str,
+            "lesson_name": lesson_name,
+            "instructor": instructor,
+            "classroom_name": classroom_name
+        }
+    except (TypeError, IndexError, KeyError):
+        return None
 
-    def __init__(self, classroom: str, building: str, date: str = None):
-        self.classroom         = classroom
-        self.building          = building
-        self.date              = date or datetime.now().strftime('%Y-%m-%d')
-        self.morning_classes   = []
-        self.afternoon_classes = []
-        self.classroom_name    = "N/A"
-
-    def fetch_and_split(self):
-        """
-        EN/IT: Use cache if available, otherwise fetch from API and split.
-        """
-        # 1) Try cache (which now includes classroom_name)
-        cached = get_from_cache(self.classroom, self.building, self.date)
-        if cached:
-            mc, ac, cname = cached
-            self.morning_classes   = mc
-            self.afternoon_classes = ac
-            self.classroom_name    = cname
-            return
-
-        # 2) Fetch raw data from external API
-        data = self.fetch_lesson_data()
-
-        # 3) Determine classroom_name: first from API, else fallback mapping
-        first_room = _first_or_default(
-            data[0].get("aule", [])
-        ) if isinstance(data, list) and data else {}
-        self.classroom_name = first_room.get("descrizione", "N/A")
-        if self.classroom_name == "N/A":
-            self.classroom_name = CLASSROOM_DESCRIPTIONS.get(
-                self.classroom,
-                f"Aula {self.classroom}"
-            )
-
-        # 4) If API returned an error, exit early (name is already set)
-        if isinstance(data, dict) and data.get("error"):
-            return
-
-        # 5) Split into morning/afternoon
-        self.morning_classes, self.afternoon_classes = self.split_classes(data)
-
-        # 6) Cache both the class lists AND the classroom_name
-        set_in_cache(
-            self.classroom,
-            self.building,
-            self.date,
-            (self.morning_classes, self.afternoon_classes, self.classroom_name)
+def fetch_classroom_lessons(classroom_id: str, building_id: str, date_str: Optional[str], period: str) -> List[Dict[str, Any]]:
+    """Fetches, caches, and filters lessons for a single classroom."""
+    date = date_str or datetime.now().strftime('%Y-%m-%d')
+    cache_key = f"lessons_{classroom_id}_{date}"
+    
+    cached_data = get_from_cache(cache_key)
+    if cached_data:
+        all_lessons = cached_data
+    else:
+        start_dt = f"{date}T00:00:00"
+        end_dt = f"{date}T23:59:59"
+        api_url = (
+            f"{current_app.config['LESSON_API_BASE_URL']}/api/Impegni/getImpegniPublic"
+            f"?aula={classroom_id}&edificio={building_id}&dataInizio={start_dt}&dataFine={end_dt}"
         )
+        raw_lessons = _make_api_request(api_url)
+        all_lessons = [parsed for lesson in raw_lessons if (parsed := _parse_lesson(lesson))]
+        set_in_cache(cache_key, all_lessons)
 
-    def fetch_lesson_data(self):
-        """
-        EN/IT: Queries the Cineca API to obtain lessons (impegni).
-        """
-        try:
-            start = f"{self.date}T00:00:00%2B01:00"
-            end   = f"{self.date}T23:59:59%2B01:00"
-            url = (
-                f"{BASE_URL}/api/Impegni/getImpegniPublic"
-                f"?aula={self.classroom}"
-                f"&edificio={self.building}"
-                f"&dataInizio={start}"
-                f"&dataFine={end}"
-            )
-            resp = requests.get(url, timeout=6)
-            resp.raise_for_status()
-            return resp.json()
-        except RequestException:
-            return {"error": "Unable to fetch lesson data"}
+    # MODIFICA: Logica migliorata per il caso "nessuna lezione"
+    if not all_lessons:
+        # Cerca sempre il nome nella mappa, anche se non ci sono lezioni
+        friendly_name = CLASSROOM_ID_TO_NAME.get(classroom_id, f"Room ID {classroom_id}")
+        return [{"classroom_name": friendly_name, "message": "No lessons available"}]
 
-    def split_classes(self, data):
-        """
-        EN/IT: Divide lessons into morning (<12:00) and afternoon (>=12:00).
-        """
-        morning, afternoon = [], []
-        for lesson in data or []:
-            try:
-                dt = datetime.strptime(
-                    lesson.get("dataInizio", ""),
-                    "%Y-%m-%dT%H:%M:%S.%fZ"
-                ).time()
-            except Exception:
-                continue
-            (morning if dt < time(12, 0) else afternoon).append(lesson)
-        return morning, afternoon
+    def filter_by_period(lesson):
+        start_time = datetime.fromisoformat(lesson['start_time'].replace('Z', '+00:00')).time()
+        if period == "morning":
+            return start_time < time(13, 0)
+        if period == "afternoon":
+            return start_time >= time(13, 0)
+        return True
 
+    return sorted([lesson for lesson in all_lessons if filter_by_period(lesson)], key=lambda x: x['start_time'])
 
-def get_active_or_soon_lessons(building_key: str, floor: int, date: str = None):
-    """
-    EN: Return all lessons for a specific floor within a building on a given date.
-    IT: Restituisce tutte le lezioni di un piano specifico di un edificio per una data.
-    """
-    date = date or datetime.now().strftime('%Y-%m-%d')
-    lessons = []
-
-    floor_map = FLOOR_CLASSROOMS.get(building_key, {}).get(floor, [])
-    for classroom_id, building_id in floor_map:
-        looper = LessonLooper(classroom_id, building_id, date)
-        looper.fetch_and_split()
-
-        for raw in looper.morning_classes + looper.afternoon_classes:
-            try:
-                start = datetime.fromisoformat(
-                    raw["dataInizio"].replace('Z', '+00:00')
-                )
-                end = datetime.fromisoformat(
-                    raw["dataFine"].replace('Z', '+00:00')
-                )
-            except Exception:
-                continue
-
-            evento      = raw.get("evento", {})
-            dettagli    = _first_or_default(evento.get("dettagliDidattici", []))
-            lesson_name = dettagli.get("nome", "N/A")
-
-            docente     = _first_or_default(raw.get("docenti", []))
-            name        = docente.get("nome", "").strip()
-            surname     = docente.get("cognome", "").strip()
-            instructor  = f"{name} {surname}".strip() or "N/A"
-
-            aula        = _first_or_default(raw.get("aule", []))
-            classroom_name = aula.get("descrizione", "N/A")
-
-            lessons.append({
-                "start_time"     : start.isoformat(),
-                "end_time"       : end.isoformat(),
-                "lesson_name"    : lesson_name,
-                "instructor"     : instructor,
-                "classroom_name" : classroom_name
-            })
-
-    lessons.sort(key=lambda x: x["start_time"])
-    return lessons
+def fetch_floor_lessons(building_key: str, floor: int, date_str: Optional[str]) -> List[Dict[str, Any]]:
+    # ... (funzione non modificata)
+    classrooms_on_floor = BUILDING_FLOOR_MAP.get(building_key, {}).get(floor, [])
+    all_lessons = []
+    
+    for classroom_id, building_id in classrooms_on_floor:
+        lessons = fetch_classroom_lessons(classroom_id, building_id, date_str, "all")
+        if lessons and "message" not in lessons[0]:
+            all_lessons.extend(lessons)
+            
+    return sorted(all_lessons, key=lambda x: (x['start_time'], x['classroom_name']))

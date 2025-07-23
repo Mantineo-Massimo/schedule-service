@@ -1,31 +1,27 @@
 """
-EN: Application factory for Info_Kiosk_Display.
-IT: Factory per l'inizializzazione dell'app Flask Info_Kiosk_Display.
+Application factory for the Schedule Display Service.
 """
-
 import os
 from flask import Flask
 from flask_cors import CORS
-from app.routes import register_routes
+from .routes import register_routes
+from .config import load_configuration
 
 def create_app():
-    """
-    EN: Create and configure the Flask app.
-    IT: Crea e configura l'app Flask.
-    """
-    basedir = os.path.abspath(os.path.dirname(__file__))
-    static_dir = os.path.join(basedir, '..', 'web')
-
+    """Creates, configures, and returns the Flask application instance."""
     app = Flask(
         __name__,
-        static_folder=static_dir,
-        static_url_path='/static'
+        static_folder='../ui',
+        static_url_path='' # Serve static content from the root URL
     )
 
-    CORS(app)  # EN: Enable CORS globally / IT: Abilita CORS globalmente
-    register_routes(app)  # EN/IT: Record all routes of the app / Registra tutte le rotte dell'app
+    # Load configuration from .env and other sources
+    load_configuration(app)
+    
+    # Enable Cross-Origin Resource Sharing (CORS) for all routes
+    CORS(app)
+
+    # Register all API and view routes
+    register_routes(app)
 
     return app
-
-# EN/IT: Entry point for Gunicorn (production WSGI server) / Punto di ingresso per Gunicorn (server WSGI di produzione)
-app = create_app()
