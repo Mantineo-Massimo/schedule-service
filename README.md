@@ -8,7 +8,8 @@
 
 Un microservizio per visualizzare in tempo reale gli orari delle lezioni universitarie, sia per singole aule che per interi piani di un edificio.
 
-![Showcase del Servizio](./docs/schedule-showcase.png)
+![Showcase del Servizio Classroom](./docs/schedule-classroom-showcase.png)
+![Showcase del Servizio Floor](./docs/schedule-floor-showcase.png)
 
 ---
 
