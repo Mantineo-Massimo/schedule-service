@@ -126,7 +126,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            const response = await fetch(config.apiEndpoint, {
+            // MODIFICA: Rimosso '/' iniziale per rendere il percorso relativo
+            const response = await fetch('lessons', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ classroom: classroomId, building: buildingId, date, period })

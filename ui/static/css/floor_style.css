@@ -2,7 +2,7 @@
 body {
   margin: 0;
   padding: 0;
-  background: url('/assets/monitor_background.png') center/cover no-repeat fixed;
+  background: url('../../assets/monitor_background.png') center/cover no-repeat fixed;
   font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
   height: 100vh;
   display: flex;

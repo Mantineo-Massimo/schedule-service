@@ -1,10 +1,7 @@
 /**
  * Script for the Floor Schedule View.
- * Fetches and displays lessons for an entire floor, supports bilingual text,
- * and handles automatic scrolling.
  */
 document.addEventListener('DOMContentLoaded', () => {
-    // --- DOM Element References ---
     const dom = {
         lessonBody: document.getElementById('lesson-body'),
         clock: document.getElementById('clock'),
@@ -13,16 +10,12 @@ document.addEventListener('DOMContentLoaded', () => {
         body: document.body
     };
 
-    // --- State and Configuration ---
-    let state = {
-        currentLanguage: 'it',
-    };
+    let state = { currentLanguage: 'it' };
     const config = {
         languageToggleInterval: 15000,
         dataRefreshInterval: 5 * 60 * 1000
     };
 
-    // --- Language & Key Mapping Data ---
     const translations = {
         it: {
             days: ["Domenica", "Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato"],
@@ -37,16 +30,13 @@ document.addEventListener('DOMContentLoaded', () => {
             building: { "A": "Building A", "B": "Building B", "SBA": "Building SBA" }
         }
     };
-    
-    // --- Utility Functions ---
+
     const getUrlParams = () => new URLSearchParams(window.location.search);
     const padZero = (n) => String(n).padStart(2, '0');
 
-    // --- UI Update Functions ---
     function updateClockAndDate(dateStr) {
         const now = new Date();
         dom.clock.textContent = `${padZero(now.getHours())}:${padZero(now.getMinutes())}:${padZero(now.getSeconds())}`;
-        
         const displayDate = new Date(dateStr + 'T12:00:00');
         const lang = translations[state.currentLanguage];
         const dayName = lang.days[displayDate.getUTCDay()];
@@ -58,13 +48,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const params = getUrlParams();
         const buildingKey = params.get('building')?.toUpperCase();
         const floorNumber = params.get('floor');
-        
         if (!buildingKey || !floorNumber) return;
-
         const lang = translations[state.currentLanguage];
         const buildingName = lang.building[buildingKey] || buildingKey;
         const floorText = lang.floor;
-        
         dom.floorLabel.textContent = `${buildingName} - ${floorText} ${floorNumber}`;
     }
 
@@ -83,27 +70,19 @@ document.addEventListener('DOMContentLoaded', () => {
             dom.lessonBody.innerHTML = `<tr><td colspan="4">Nessuna lezione trovata per questo piano.</td></tr>`;
             return;
         }
-        
         lessons.forEach(lesson => {
             const start = new Date(lesson.start_time);
             const end = new Date(lesson.end_time);
             const timeRange = `${padZero(start.getHours())}:${padZero(start.getMinutes())} - ${padZero(end.getHours())}:${padZero(end.getMinutes())}`;
-            
             const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${lesson.classroom_name}</td>
-                <td>${timeRange}</td>
-                <td style="text-align: left;">${lesson.lesson_name}</td>
-                <td style="text-align: left;">${lesson.instructor}</td>
-            `;
+            row.innerHTML = `<td>${lesson.classroom_name}</td><td>${timeRange}</td><td style="text-align: left;">${lesson.lesson_name}</td><td style="text-align: left;">${lesson.instructor}</td>`;
             dom.lessonBody.appendChild(row);
         });
     }
     
-    // --- Data Fetching ---
     async function fetchLessons() {
         const params = getUrlParams();
-        const buildingKey = params.get('building'); // Ora questa è la chiave finale, es: 'A'
+        const buildingKey = params.get('building');
         const floor = params.get('floor');
         const date = params.get('date') || new Date().toISOString().split('T')[0];
 
@@ -113,8 +92,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         try {
-            // CORREZIONE: Usa la chiave direttamente dall'URL senza conversioni
-            const response = await fetch(`/floor/${buildingKey}/${floor}?date=${date}`);
+            // MODIFICA: Usa la chiave breve ('A', 'B', etc.) direttamente nella chiamata API
+            const response = await fetch(`floor/${buildingKey}/${floor}?date=${date}`);
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             const data = await response.json();
             renderLessons(data);
@@ -127,10 +106,8 @@ document.addEventListener('DOMContentLoaded', () => {
         updateFloorLabel();
     }
     
-    // --- Initialization ---
     dom.body.classList.add('lang-it');
     dom.body.classList.remove('lang-en');
-
     fetchLessons();
     setInterval(fetchLessons, config.dataRefreshInterval);
     setInterval(toggleLanguage, config.languageToggleInterval);

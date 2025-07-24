@@ -1,27 +1,25 @@
-"""
-Application factory for the Schedule Display Service.
-"""
 import os
 from flask import Flask
 from flask_cors import CORS
 from .routes import register_routes
-from .config import load_configuration
+from flask_talisman import Talisman
+from dotenv import load_dotenv
 
 def create_app():
-    """Creates, configures, and returns the Flask application instance."""
+    """Crea, configura e restituisce l'istanza dell'applicazione Flask."""
+    
     app = Flask(
         __name__,
-        static_folder='../ui',
-        static_url_path='' # Serve static content from the root URL
+        template_folder='../ui',
+        static_folder='../ui'
     )
 
-    # Load configuration from .env and other sources
-    load_configuration(app)
+    # Carica le variabili dal file .env nella configurazione di Flask
+    load_dotenv()
+    app.config['LESSON_API_BASE_URL'] = os.getenv('LESSON_API_BASE_URL')
     
-    # Enable Cross-Origin Resource Sharing (CORS) for all routes
+    Talisman(app, content_security_policy=None, force_https=False)
     CORS(app)
-
-    # Register all API and view routes
     register_routes(app)
-
+    
     return app

@@ -52,7 +52,7 @@ Questo servizio è parte della `DigitalSignageSuite` e viene avviato tramite il 
     ```bash
     docker compose up --build -d
     ```
-3.  Il servizio sarà accessibile sulla porta **8081**.
+3.  Il servizio è accessibile tramite il reverse proxy..
 
 ---
 
@@ -64,7 +64,7 @@ Per utilizzare il servizio, costruisci un URL specificando la vista e i parametr
 
 Mostra l'orario di una singola aula.
 
-* **URL:** `http://localhost:8081/views/classroom_view.html?classroom=5f775da9bb0c1600171ae370&building=5f6cb2c183c80e0018f4d46&date=2025-07-23`
+* **URL:** `http://localhost/schedule/classroom_view.html?classroom=...&building=...&date=...`
 
 * **Parametri Disponibili:**
 
@@ -79,7 +79,7 @@ Mostra l'orario di una singola aula.
 
 Mostra l'orario aggregato di un intero piano.
 
-* **URL:** `http://localhost:8081/views/floor_view.html?floor=1&building=A&date=2025-07-23`
+* **URL:** `http://localhost/schedule/floor_view.html?floor=...&building=...&date=...`
 
 * **Parametri Disponibili:**
 
