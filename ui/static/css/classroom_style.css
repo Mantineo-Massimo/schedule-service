@@ -20,7 +20,7 @@ body.lang-it .lang-en { display: none; }
 
 /* Main table container */
 .table-container {
-  width: 75%;
+  width: 70%;
   height: 70%;
   background-color: rgba(255, 255, 255, 0.95);
   padding: 30px 40px;
@@ -46,7 +46,7 @@ body.lang-it .lang-en { display: none; }
 /* Scrolling table body */
 .scroll-body {
   flex-grow: 1;
-  overflow-y: hidden; /* Scrolling is handled by JS animation */
+  overflow: hidden; /* Lo scroll è gestito da JS, non dalla barra del browser */
 }
 .scroll-body::-webkit-scrollbar {
   display: none;
@@ -58,6 +58,11 @@ table {
   border-collapse: collapse;
   font-size: 1.7em;
   table-layout: fixed;
+}
+
+/* MODIFICA: Aggiunto padding alla fine della tabella per migliorare la visibilità */
+.scroll-body table {
+    padding-bottom: 20px;
 }
 
 thead th {
@@ -97,9 +102,9 @@ th:nth-child(4), td:nth-child(4) { width: 27%; text-align: left; } /* INSTRUCTOR
   border-radius: 50%;
   flex-shrink: 0;
 }
-.status-live { background-color: #28a745; } /* Green */
-.status-ended { background-color: #ff0000; } /* Grey */
-.status-soon { background-color: #ffc107; } /* Yellow */
+.status-live { background-color: #28a745; }
+.status-ended { background-color: #ff0000; }
+.status-soon { background-color: #ffc107; }
 
 /* Overlay UI elements */
 .top-right { position: absolute; top: 20px; right: 30px; font-size: 3em; font-weight: bold; color: white; }

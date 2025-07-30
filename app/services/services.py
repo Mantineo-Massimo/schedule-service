@@ -1,13 +1,13 @@
 """
 Business logic for fetching, processing, and caching lesson data.
 """
-import json
 import requests
-from requests.exceptions import RequestException
+import json
 from datetime import datetime, time
 from typing import List, Dict, Any, Optional
 from flask import current_app
 
+# Questi import relativi ora sono corretti perché i file sono nello stesso pacchetto
 from .models import get_from_cache, set_in_cache
 from .constants import BUILDING_FLOOR_MAP, CLASSROOM_ID_TO_NAME
 
@@ -21,7 +21,7 @@ def _make_api_request(url: str) -> List[Dict[str, Any]]:
             return response.json()
         current_app.logger.error(f"API response from {url} is not JSON.")
         return []
-    except RequestException as e:
+    except requests.RequestException as e:
         current_app.logger.error(f"API request to {url} failed: {e}")
         return []
     except json.JSONDecodeError as e:

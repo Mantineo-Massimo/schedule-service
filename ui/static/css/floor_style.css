@@ -20,7 +20,7 @@ body.lang-it .lang-en { display: none; }
 
 /* Main table container */
 .table-container {
-  width: 75%;
+  width: 70%;
   height: 70%;
   background-color: rgba(255, 255, 255, 0.95);
   padding: 30px 40px;
@@ -46,7 +46,7 @@ body.lang-it .lang-en { display: none; }
 /* Scrolling table body */
 .scroll-body {
   flex-grow: 1;
-  overflow-y: hidden; /* Scrolling is handled by JS animation */
+  overflow: hidden;
 }
 .scroll-body::-webkit-scrollbar {
   display: none;
@@ -58,6 +58,11 @@ table {
   border-collapse: collapse;
   font-size: 1.7em;
   table-layout: fixed;
+}
+
+/* MODIFICA: Aggiunto padding alla fine della tabella per migliorare la visibilità */
+.scroll-body table {
+    padding-bottom: 20px;
 }
 
 thead th {
