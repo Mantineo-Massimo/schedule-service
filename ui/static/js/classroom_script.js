@@ -1,5 +1,5 @@
 /**
- * Script for the Classroom Schedule View - Legacy Browser Compatible Version.
+ * Script for the Classroom Schedule View - Legacy, Optimized, and Bug-Fixed Version.
  */
 document.addEventListener('DOMContentLoaded', function() {
     // --- Riferimenti al DOM ---
@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var state = {
         currentLanguage: 'it',
         lessons: [],
+        fetchStatus: 'loading', // 'loading', 'success', 'error'
         params: new URLSearchParams(window.location.search),
         get displayDate() {
             var dateStr = this.params.get('date') || new Date().toISOString().split('T')[0];
@@ -33,17 +34,17 @@ document.addEventListener('DOMContentLoaded', function() {
             days: ["Domenica", "Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato"],
             months: ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"],
             status: { soon: 'Futura', live: 'In corso', ended: 'Terminata' },
-            noLessons: 'Nessuna lezione disponibile',
-            missingParams: "Parametri 'classroom' o 'building' mancanti.",
-            loadingError: "Errore nel caricamento delle lezioni."
+            noLessons: 'Nessuna lezione disponibile al momento',
+            missingParams: "Parametri 'classroom' o 'building' mancanti",
+            loadingError: "Errore nel caricamento delle lezioni"
         },
         en: {
             days: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
             months: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
             status: { soon: 'Upcoming', live: 'Ongoing', ended: 'Ended' },
-            noLessons: 'No lessons available',
-            missingParams: "Missing 'classroom' or 'building' parameters.",
-            loadingError: "Error loading lessons."
+            noLessons: 'No lessons available at the moment',
+            missingParams: "Missing 'classroom' or 'building' parameters",
+            loadingError: "Error loading lessons"
         }
     };
 
@@ -68,7 +69,12 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateLanguageStrings() {
         updateStaticUI();
         var rows = dom.lessonBody.querySelectorAll('tr');
-        if (rows.length > 0 && state.lessons.length > 0 && !state.lessons[0].message) {
+        if (rows.length === 1 && rows[0].querySelector('td[colspan="4"]')) {
+            // Se è mostrato un messaggio, ritraducilo
+            var messageKey = (state.fetchStatus === 'error') ? 'loadingError' : 'noLessons';
+            showMessageInTable(messageKey);
+        } else if (rows.length > 0) {
+            // Se sono mostrate lezioni, ritraduci solo lo stato
             rows.forEach(function(row, index) {
                 var lesson = state.lessons[index];
                 if (lesson) {
@@ -80,9 +86,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }
             });
-        } else if (dom.lessonBody.querySelector('td[colspan="4"]')) {
-            var currentMessageKey = state.lessons.length ? 'noLessons' : 'loadingError';
-            showMessageInTable(currentMessageKey);
         }
     }
 
@@ -108,9 +111,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function renderLessons() {
         dom.lessonBody.innerHTML = '';
-        if (!state.lessons.length || state.lessons[0].message) {
+        if (state.fetchStatus === 'error' || !state.lessons.length || state.lessons[0].message) {
             dom.classroomName.textContent = state.lessons[0] ? state.lessons[0].classroom_name : 'Classroom';
-            var messageKey = state.lessons.length ? 'noLessons' : 'loadingError';
+            var messageKey = (state.fetchStatus === 'error') ? 'loadingError' : 'noLessons';
             showMessageInTable(messageKey);
             return;
         }
@@ -136,6 +139,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var date = state.displayDate.toISOString().split('T')[0];
         var period = state.params.get('period') || 'all';
         if (!classroomId || !buildingId) {
+            state.fetchStatus = 'error';
             showMessageInTable('missingParams');
             return;
         }
@@ -151,11 +155,13 @@ document.addEventListener('DOMContentLoaded', function() {
             return response.json();
         })
         .then(function(data) {
+            state.fetchStatus = 'success';
             state.lessons = data;
             renderLessons();
         })
         .catch(function(error) {
             console.error('Failed to fetch lessons:', error);
+            state.fetchStatus = 'error';
             state.lessons = [];
             renderLessons();
         });
@@ -200,7 +206,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         scrollAnimationId = requestAnimationFrame(animateScroll);
     }
-    
 
     function init() {
         dom.body.className = 'lang-' + state.currentLanguage;

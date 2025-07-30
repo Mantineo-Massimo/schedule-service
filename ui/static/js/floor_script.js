@@ -1,5 +1,5 @@
 /**
- * Script for the Floor Schedule View - Legacy Browser Compatible Version.
+ * Script for the Floor Schedule View - Legacy, Optimized, and Bug-Fixed Version.
  */
 document.addEventListener('DOMContentLoaded', function() {
     // --- Riferimenti al DOM ---
@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var state = {
         currentLanguage: 'it',
         lessons: [],
+        fetchStatus: 'loading', // 'loading', 'success', 'error'
         params: new URLSearchParams(window.location.search),
         get displayDate() {
             var dateStr = this.params.get('date') || new Date().toISOString().split('T')[0];
@@ -33,18 +34,18 @@ document.addEventListener('DOMContentLoaded', function() {
             months: ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"],
             floor: "Piano",
             building: { "A": "Edificio A", "B": "Edificio B", "SBA": "Edificio SBA" },
-            noLessons: "Nessuna lezione trovata per questo piano.",
-            missingParams: "Parametri 'building' o 'floor' mancanti.",
-            loadingError: "Errore nel caricamento delle lezioni."
+            noLessons: "Nessuna lezione trovata per questo piano al momento",
+            missingParams: "Parametri 'building' o 'floor' mancanti",
+            loadingError: "Errore nel caricamento delle lezioni"
         },
         en: {
             days: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
             months: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
             floor: "Floor",
             building: { "A": "Building A", "B": "Building B", "SBA": "Building SBA" },
-            noLessons: "No lessons found for this floor.",
-            missingParams: "Missing 'building' or 'floor' parameters.",
-            loadingError: "Error loading lessons."
+            noLessons: "No lessons found for this floor at the moment",
+            missingParams: "Missing 'building' or 'floor' parameters",
+            loadingError: "Error loading lessons"
         }
     };
 
@@ -73,6 +74,11 @@ document.addEventListener('DOMContentLoaded', function() {
         state.currentLanguage = (state.currentLanguage === 'en') ? 'it' : 'en';
         dom.body.className = 'lang-' + state.currentLanguage;
         updateStaticUI();
+        // Se è mostrato un messaggio, ritraducilo
+        if (dom.lessonBody.querySelector('td[colspan="4"]')) {
+            var messageKey = (state.fetchStatus === 'error') ? 'loadingError' : 'noLessons';
+            showMessageInTable(messageKey);
+        }
     }
 
     function showMessageInTable(messageKey) {
@@ -82,12 +88,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function renderLessons() {
         dom.lessonBody.innerHTML = '';
-        if (!state.lessons.length) {
-            showMessageInTable('noLessons');
+        if (state.fetchStatus === 'error' || !state.lessons.length) {
+            var messageKey = (state.fetchStatus === 'error') ? 'loadingError' : 'noLessons';
+            showMessageInTable(messageKey);
             return;
         }
 
-        
         var fragment = document.createDocumentFragment();
         state.lessons.forEach(function(lesson) {
             var start = new Date(lesson.start_time);
@@ -106,6 +112,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var floor = state.params.get('floor');
         var date = state.displayDate.toISOString().split('T')[0];
         if (!building || !floor) {
+            state.fetchStatus = 'error';
             showMessageInTable('missingParams');
             return;
         }
@@ -117,13 +124,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 return response.json();
             })
             .then(function(data) {
+                state.fetchStatus = 'success';
                 state.lessons = data;
                 renderLessons();
             })
             .catch(function(error) {
                 console.error('Failed to fetch lessons:', error);
+                state.fetchStatus = 'error';
                 state.lessons = [];
-                showMessageInTable('loadingError');
+                renderLessons();
             });
     }
     
