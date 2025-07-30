@@ -87,6 +87,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
+        
         var fragment = document.createDocumentFragment();
         state.lessons.forEach(function(lesson) {
             var start = new Date(lesson.start_time);

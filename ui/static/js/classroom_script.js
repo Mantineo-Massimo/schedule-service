@@ -200,6 +200,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         scrollAnimationId = requestAnimationFrame(animateScroll);
     }
+    
 
     function init() {
         dom.body.className = 'lang-' + state.currentLanguage;
