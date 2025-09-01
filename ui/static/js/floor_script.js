@@ -49,7 +49,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
-    var padZero = function(n) { return String(n).padStart(2, '0'); };
+    // MODIFIED FOR COMPATIBILITY WITH OLDER BROWSERS
+    var padZero = function(n) { return n < 10 ? '0' + n : String(n); };
 
     function updateClock() {
         var now = new Date();
