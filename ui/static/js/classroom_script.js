@@ -1,5 +1,5 @@
 /**
- * Script for the Classroom Schedule View - Legacy, Optimized, and Bug-Fixed Version.
+ * Script for the Classroom Schedule View - Robust & Legacy Browser Compatible Version.
  */
 document.addEventListener('DOMContentLoaded', function() {
     // --- Riferimenti al DOM ---
@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var state = {
         currentLanguage: 'it',
         lessons: [],
-        fetchStatus: 'loading', // 'loading', 'success', 'error'
+        fetchStatus: 'loading',
         params: new URLSearchParams(window.location.search),
         get displayDate() {
             var dateStr = this.params.get('date') || new Date().toISOString().split('T')[0];
@@ -24,7 +24,6 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     var config = {
-        apiEndpoint: 'lessons',
         languageToggleInterval: 15,
         dataRefreshInterval: 5 * 60,
     };
@@ -48,7 +47,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
-    // MODIFIED FOR COMPATIBILITY WITH OLDER BROWSERS
     var padZero = function(n) { return n < 10 ? '0' + n : String(n); };
 
     function updateClock() {
@@ -71,11 +69,9 @@ document.addEventListener('DOMContentLoaded', function() {
         updateStaticUI();
         var rows = dom.lessonBody.querySelectorAll('tr');
         if (rows.length === 1 && rows[0].querySelector('td[colspan="4"]')) {
-            // Se è mostrato un messaggio, ritraducilo
             var messageKey = (state.fetchStatus === 'error') ? 'loadingError' : 'noLessons';
             showMessageInTable(messageKey);
         } else if (rows.length > 0) {
-            // Se sono mostrate lezioni, ritraduci solo lo stato
             rows.forEach(function(row, index) {
                 var lesson = state.lessons[index];
                 if (lesson) {
@@ -134,38 +130,43 @@ document.addEventListener('DOMContentLoaded', function() {
         setTimeout(setupAutoScroll, 100);
     }
 
+    // Aggiunto try...catch per robustezza
     function fetchLessons() {
-        var classroomId = state.params.get('classroom');
-        var buildingId = state.params.get('building');
-        var date = state.displayDate.toISOString().split('T')[0];
-        var period = state.params.get('period') || 'all';
-        if (!classroomId || !buildingId) {
-            state.fetchStatus = 'error';
-            showMessageInTable('missingParams');
-            return;
-        }
-        fetch('lessons', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ classroom: classroomId, building: buildingId, date: date, period: period })
-        })
-        .then(function(response) {
-            if (!response.ok) {
-                throw new Error('HTTP error! status: ' + response.status);
+        try {
+            var classroomId = state.params.get('classroom');
+            var buildingId = state.params.get('building');
+            var date = state.displayDate.toISOString().split('T')[0];
+            var period = state.params.get('period') || 'all';
+            if (!classroomId || !buildingId) {
+                state.fetchStatus = 'error';
+                showMessageInTable('missingParams');
+                return;
             }
-            return response.json();
-        })
-        .then(function(data) {
-            state.fetchStatus = 'success';
-            state.lessons = data;
-            renderLessons();
-        })
-        .catch(function(error) {
-            console.error('Failed to fetch lessons:', error);
-            state.fetchStatus = 'error';
-            state.lessons = [];
-            renderLessons();
-        });
+            fetch('lessons', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ classroom: classroomId, building: buildingId, date: date, period: period })
+            })
+            .then(function(response) {
+                if (!response.ok) {
+                    throw new Error('HTTP error! status: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(function(data) {
+                state.fetchStatus = 'success';
+                state.lessons = data;
+                renderLessons();
+            })
+            .catch(function(error) {
+                console.error('Failed to fetch lessons:', error);
+                state.fetchStatus = 'error';
+                state.lessons = [];
+                renderLessons();
+            });
+        } catch (e) {
+            console.error("Errore critico in fetchLessons:", e);
+        }
     }
     
     var scrollAnimationId;
@@ -208,21 +209,43 @@ document.addEventListener('DOMContentLoaded', function() {
         scrollAnimationId = requestAnimationFrame(animateScroll);
     }
 
+            // --- Logica per la Schermata di Caricamento ---
+    // Aspetta che l'intera pagina (immagini, stili, etc.) sia completamente caricata
+    window.onload = function() {
+        var loader = document.getElementById('loader');
+        if (loader) {
+            // Aggiunge la classe 'hidden' per far scomparire il loader con una transizione
+            loader.classList.add('hidden');
+        }
+    };
+    
+
     function init() {
         dom.body.className = 'lang-' + state.currentLanguage;
         updateStaticUI();
         fetchLessons();
         var secondsCounter = 0;
+        
+        // Aggiunto try...catch per robustezza
         setInterval(function() {
-            secondsCounter++;
-            updateClock();
-            if (secondsCounter % config.languageToggleInterval === 0) {
-                toggleLanguage();
-            }
-            if (secondsCounter % config.dataRefreshInterval === 0) {
-                fetchLessons();
+            try {
+                secondsCounter++;
+                updateClock();
+                if (secondsCounter % config.languageToggleInterval === 0) {
+                    toggleLanguage();
+                }
+                if (secondsCounter % config.dataRefreshInterval === 0) {
+                    fetchLessons();
+                }
+            } catch (e) {
+                console.error("Errore nell'intervallo principale:", e);
             }
         }, 1000);
+
+        // Aggiunto ricaricamento pagina per stabilità
+        setTimeout(function() { 
+            window.location.reload(true); 
+        }, 4 * 60 * 60 * 1000);
     }
 
     init();

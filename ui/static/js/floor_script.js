@@ -1,5 +1,5 @@
 /**
- * Script for the Floor Schedule View - Legacy, Optimized, and Bug-Fixed Version.
+ * Script for the Floor Schedule View - Robust & Legacy Browser Compatible Version.
  */
 document.addEventListener('DOMContentLoaded', function() {
     // --- Riferimenti al DOM ---
@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var state = {
         currentLanguage: 'it',
         lessons: [],
-        fetchStatus: 'loading', // 'loading', 'success', 'error'
+        fetchStatus: 'loading',
         params: new URLSearchParams(window.location.search),
         get displayDate() {
             var dateStr = this.params.get('date') || new Date().toISOString().split('T')[0];
@@ -49,7 +49,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
-    // MODIFIED FOR COMPATIBILITY WITH OLDER BROWSERS
     var padZero = function(n) { return n < 10 ? '0' + n : String(n); };
 
     function updateClock() {
@@ -75,7 +74,6 @@ document.addEventListener('DOMContentLoaded', function() {
         state.currentLanguage = (state.currentLanguage === 'en') ? 'it' : 'en';
         dom.body.className = 'lang-' + state.currentLanguage;
         updateStaticUI();
-        // Se è mostrato un messaggio, ritraducilo
         if (dom.lessonBody.querySelector('td[colspan="4"]')) {
             var messageKey = (state.fetchStatus === 'error') ? 'loadingError' : 'noLessons';
             showMessageInTable(messageKey);
@@ -108,33 +106,38 @@ document.addEventListener('DOMContentLoaded', function() {
         setTimeout(setupAutoScroll, 100);
     }
 
+    // Aggiunto try...catch per robustezza
     function fetchLessons() {
-        var building = state.params.get('building');
-        var floor = state.params.get('floor');
-        var date = state.displayDate.toISOString().split('T')[0];
-        if (!building || !floor) {
-            state.fetchStatus = 'error';
-            showMessageInTable('missingParams');
-            return;
-        }
-        fetch('floor/' + building + '/' + floor + '?date=' + date)
-            .then(function(response) {
-                if (!response.ok) {
-                    throw new Error('HTTP error! status: ' + response.status);
-                }
-                return response.json();
-            })
-            .then(function(data) {
-                state.fetchStatus = 'success';
-                state.lessons = data;
-                renderLessons();
-            })
-            .catch(function(error) {
-                console.error('Failed to fetch lessons:', error);
+        try {
+            var building = state.params.get('building');
+            var floor = state.params.get('floor');
+            var date = state.displayDate.toISOString().split('T')[0];
+            if (!building || !floor) {
                 state.fetchStatus = 'error';
-                state.lessons = [];
-                renderLessons();
-            });
+                showMessageInTable('missingParams');
+                return;
+            }
+            fetch('floor/' + building + '/' + floor + '?date=' + date)
+                .then(function(response) {
+                    if (!response.ok) {
+                        throw new Error('HTTP error! status: ' + response.status);
+                    }
+                    return response.json();
+                })
+                .then(function(data) {
+                    state.fetchStatus = 'success';
+                    state.lessons = data;
+                    renderLessons();
+                })
+                .catch(function(error) {
+                    console.error('Failed to fetch lessons:', error);
+                    state.fetchStatus = 'error';
+                    state.lessons = [];
+                    renderLessons();
+                });
+        } catch (e) {
+            console.error("Errore critico in fetchLessons:", e);
+        }
     }
     
     var scrollAnimationId;
@@ -177,6 +180,17 @@ document.addEventListener('DOMContentLoaded', function() {
         scrollAnimationId = requestAnimationFrame(animateScroll);
     }
 
+            // --- Logica per la Schermata di Caricamento ---
+    // Aspetta che l'intera pagina (immagini, stili, etc.) sia completamente caricata
+    window.onload = function() {
+        var loader = document.getElementById('loader');
+        if (loader) {
+            // Aggiunge la classe 'hidden' per far scomparire il loader con una transizione
+            loader.classList.add('hidden');
+        }
+    };
+    
+
     function init() {
         dom.body.className = 'lang-' + state.currentLanguage;
         updateStaticUI();
@@ -184,16 +198,26 @@ document.addEventListener('DOMContentLoaded', function() {
         
         var secondsCounter = 0;
         
+        // Aggiunto try...catch per robustezza
         setInterval(function() {
-            secondsCounter++;
-            updateClock();
-            if (secondsCounter % config.languageToggleInterval === 0) {
-                toggleLanguage();
-            }
-            if (secondsCounter % config.dataRefreshInterval === 0) {
-                fetchLessons();
+            try {
+                secondsCounter++;
+                updateClock();
+                if (secondsCounter % config.languageToggleInterval === 0) {
+                    toggleLanguage();
+                }
+                if (secondsCounter % config.dataRefreshInterval === 0) {
+                    fetchLessons();
+                }
+            } catch (e) {
+                console.error("Errore nell'intervallo principale:", e);
             }
         }, 1000);
+
+        // Aggiunto ricaricamento pagina per stabilità
+        setTimeout(function() { 
+            window.location.reload(true); 
+        }, 4 * 60 * 60 * 1000);
     }
 
     init();
