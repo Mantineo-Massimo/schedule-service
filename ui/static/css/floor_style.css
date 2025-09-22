@@ -1,4 +1,20 @@
-/* General body and background styling */
+/*
+ * EN: CSS Stylesheet for the Floor-wide Schedule View (`floor_view.html`).
+ * This file is very similar to `classroom_style.css` but is adapted for the
+ * floor view, with different column widths and no status indicator.
+ *
+ * IT: Foglio di stile CSS per la Vista Orari a livello di Piano (`floor_view.html`).
+ * Questo file è molto simile a `classroom_style.css` ma è adattato per la vista
+ * del piano, con diverse larghezze di colonna e senza l'indicatore di stato.
+ */
+
+/* ==========================================================================
+   General Body and Background Styling
+   ========================================================================== */
+/*
+ * EN: Sets the global styles for the page (background, font, layout).
+ * IT: Imposta gli stili globali per la pagina (sfondo, font, layout).
+ */
 body {
   margin: 0;
   padding: 0;
@@ -13,11 +29,23 @@ body {
   color: #333;
 }
 
-/* Hide the opposite language span */
+/* ==========================================================================
+   Language Toggling System
+   ========================================================================== */
+/*
+ * EN: Hides the `<span>` element of the inactive language.
+ * IT: Nasconde l'elemento `<span>` della lingua non attiva.
+ */
 body.lang-en .lang-it { display: none; }
 body.lang-it .lang-en { display: none; }
 
-/* Main table container */
+/* ==========================================================================
+   Main Content Container
+   ========================================================================== */
+/*
+ * EN: Styles the main white container that holds the schedule table.
+ * IT: Definisce lo stile del contenitore bianco principale che contiene la tabella degli orari.
+ */
 .table-container {
   width: 70%;
   height: 70%;
@@ -29,7 +57,13 @@ body.lang-it .lang-en { display: none; }
   flex-direction: column;
 }
 
-/* Wrapper to enable fixed header and scrolling body */
+/* ==========================================================================
+   Scrolling Table Layout
+   ========================================================================== */
+/*
+ * EN: A flex container that enables the "fixed header, scrolling body" layout.
+ * IT: Un contenitore flex che permette di ottenere il layout "intestazione fissa, corpo scorrevole".
+ */
 .scroll-wrapper {
   height: 100%;
   display: flex;
@@ -37,21 +71,32 @@ body.lang-it .lang-en { display: none; }
   overflow: hidden;
 }
 
-/* Fixed table header */
+/* EN: The container for the fixed table header. */
+/* IT: Il contenitore per l'intestazione fissa della tabella. */
 .scroll-header {
   flex-shrink: 0;
 }
 
-/* Scrolling table body */
+/*
+ * EN: The container for the table body content. Scrolling is controlled by JavaScript.
+ * IT: Il contenitore per il corpo della tabella. Lo scorrimento è controllato da JavaScript.
+ */
 .scroll-body {
   flex-grow: 1;
   overflow: hidden;
+  padding-bottom: 50px;
 }
 .scroll-body::-webkit-scrollbar {
   display: none;
 }
 
-/* Table styling */
+/* ==========================================================================
+   Table Styling
+   ========================================================================== */
+/*
+ * EN: General styling for the table.
+ * IT: Stile generale per la tabella.
+ */
 table {
   width: 100%;
   border-collapse: collapse;
@@ -59,11 +104,8 @@ table {
   table-layout: fixed;
 }
 
-/* MODIFICA: Aggiunto padding alla fine della tabella per migliorare la visibilità */
-.scroll-body table {
-    padding-bottom: 20px;
-}
-
+/* EN: Styles the table header cells. */
+/* IT: Definisce lo stile delle celle dell'intestazione della tabella. */
 thead th {
   background-color: #3c7cbb;
   color: #fff;
@@ -72,6 +114,8 @@ thead th {
   font-weight: 600;
 }
 
+/* EN: Styles the table body cells. */
+/* IT: Definisce lo stile delle celle del corpo della tabella. */
 tbody td {
   padding: 16px 18px;
   text-align: center;
@@ -79,24 +123,38 @@ tbody td {
   border-bottom: 1px solid #ddd;
 }
 
+/* EN: "Zebra striping" and hover effect for table rows. */
+/* IT: Stile a "strisce di zebra" ed effetto hover per le righe della tabella. */
 tbody tr:nth-child(even) { background-color: #f2f2f2; }
 tbody tr:hover { background-color: #e6f2ff; }
 
-/* Column widths */
-th:nth-child(1), td:nth-child(1) { width: 15%; } /* CLASSROOM */
-th:nth-child(2), td:nth-child(2) { width: 20%; } /* TIME */
-th:nth-child(3), td:nth-child(3) { width: 38%; text-align: left; } /* LESSON NAME */
-th:nth-child(4), td:nth-child(4) { width: 27%; text-align: left; } /* INSTRUCTOR */
+/* ==========================================================================
+   Column Widths
+   ========================================================================== */
+/*
+ * EN: Defines the specific widths for each column in the floor view table.
+ * IT: Definisce le larghezze specifiche per ogni colonna nella tabella della vista piano.
+ */
+th:nth-child(1), td:nth-child(1) { width: 15%; } /* CLASSROOM / AULA */
+th:nth-child(2), td:nth-child(2) { width: 20%; } /* TIME / ORA */
+th:nth-child(3), td:nth-child(3) { width: 38%; text-align: left; } /* LESSON NAME / NOME LEZIONE */
+th:nth-child(4), td:nth-child(4) { width: 27%; text-align: left; } /* INSTRUCTOR / DOCENTE */
 
-
+/* ==========================================================================
+   Loading Spinner
+   ========================================================================== */
+/*
+ * EN: A full-screen overlay to show while initial data is being fetched.
+ * IT: Una sovrimpressione a schermo intero da mostrare durante il recupero dei dati iniziali.
+ */
 #loader {
-    position: absolute;
+    position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
     z-index: 9999;
-    background-color: #0a2b5e; /* Colore blu scuro standard */
+    background-color: #0a2b5e;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -105,11 +163,15 @@ th:nth-child(4), td:nth-child(4) { width: 27%; text-align: left; } /* INSTRUCTOR
     transition: opacity 1s ease, visibility 1s ease;
 }
 
+/* EN: This class is added via JavaScript to fade out the loader. */
+/* IT: Questa classe viene aggiunta via JavaScript per far scomparire il loader. */
 #loader.hidden {
     opacity: 0;
     visibility: hidden;
 }
 
+/* EN: Container for the spinner and the logo. */
+/* IT: Contenitore per lo spinner e il logo. */
 .spinner-container {
     position: relative;
     width: 300px;
@@ -119,30 +181,43 @@ th:nth-child(4), td:nth-child(4) { width: 27%; text-align: left; } /* INSTRUCTOR
     align-items: center;
 }
 
+/* EN: The animated rotating border. */
+/* IT: Il bordo animato che ruota. */
 .spinner {
     position: absolute;
     width: 100%;
     height: 100%;
     border: 12px solid rgba(255, 255, 255, 0.3);
-    border-top-color: #FFFFFF; /* Colore bianco */
+    border-top-color: #FFFFFF;
     border-radius: 50%;
     animation: spin 1s infinite ease-in-out;
 }
 
+/* EN: The logo displayed in the center of the spinner. */
+/* IT: Il logo visualizzato al centro dello spinner. */
 .spinner-logo {
     width: 250px;
     height: auto;
 }
 
+/* EN: The keyframe animation for the spinner's rotation. */
+/* IT: L'animazione keyframe per la rotazione dello spinner. */
 @keyframes spin {
     to { transform: rotate(360deg); }
 }
 
-/* Elementi overlay (orologio, data, ecc.) */
+/* ==========================================================================
+   Overlay Elements
+   ========================================================================== */
+/*
+ * EN: Styles for the absolutely positioned text elements (clock, date, etc.).
+ * IT: Stili per gli elementi di testo posizionati in modo assoluto (orologio, data, ecc.).
+ */
 .top-right, .bottom-left, .bottom-right {
   position: absolute;
   font-weight: bold;
   color: #ffffff;
+  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5); /* EN: Add shadow for better readability / IT: Aggiunge un'ombra per migliore leggibilità */
 }
 .top-right { top: 20px; right: 30px; font-size: 6em; }
 .bottom-left { bottom: 40px; left: 30px; font-size: 4em; }

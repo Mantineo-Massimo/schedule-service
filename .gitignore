@@ -1,3 +1,6 @@
+# EN: This file tells Git which files and directories to ignore in the project.
+# IT: Questo file indica a Git quali file e directory ignorare nel progetto.
+
 # ─── Python ───────────────────────────────────────────────────────────────────
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -1,42 +1,49 @@
 """
-Data models for request/response validation and in-memory caching utilities.
+EN:
+Defines Pydantic models for data validation and the Redis cache helper functions.
+These models ensure that data structures are consistent and type-safe.
+
+IT:
+Definisce i modelli Pydantic per la validazione dei dati e le funzioni di aiuto per la cache Redis.
+Questi modelli assicurano che le strutture dati siano consistenti e con tipi sicuri.
 """
 from pydantic import BaseModel, Field
-from typing import Optional, List, Tuple, Any
-from datetime import datetime, timedelta
+from typing import Optional, Any
+import json
 from flask import current_app
 
 class LessonRequest(BaseModel):
-    """Input schema for a lesson request."""
+    """
+    EN: Input schema for a lesson request, used to validate the JSON body.
+    IT: Schema di input per una richiesta di lezioni, usato per validare il corpo JSON.
+    """
     classroom: str
     building: str
     date: Optional[str] = None
     period: Optional[str] = Field(default="all", pattern="^(morning|afternoon|all)$")
 
-class LessonResponse(BaseModel):
-    """Output schema for a single lesson."""
-    start_time: str
-    end_time: str
-    lesson_name: str
-    instructor: str
-    classroom_name: str
-
-# --- In-Memory Cache ---
-_cache: dict[str, Tuple[Any, datetime]] = {}
-
 def get_from_cache(key: str) -> Optional[Any]:
-    """Returns data from the cache if it exists and has not expired."""
-    item = _cache.get(key)
-    if item:
-        data, expiration = item
-        if expiration > datetime.now():
-            return data
-        # Remove expired item
-        del _cache[key]
-    return None
+    """
+    EN: Returns data from the Redis cache if it exists. Handles potential connection errors.
+    IT: Restituisce i dati dalla cache Redis se esistono. Gestisce potenziali errori di connessione.
+    """
+    try:
+        cached_value = current_app.redis.get(key)
+        if cached_value:
+            return json.loads(cached_value.decode('utf-8'))
+        return None
+    except Exception as e:
+        current_app.logger.error(f"Redis GET failed for key '{key}': {e}")
+        return None
 
 def set_in_cache(key: str, data: Any):
-    """Saves data to the cache with a configured Time-To-Live (TTL)."""
-    ttl_minutes = current_app.config.get('CACHE_TTL_MINUTES', 15)
-    expiration = datetime.now() + timedelta(minutes=ttl_minutes)
-    _cache[key] = (data, expiration)
+    """
+    EN: Saves data to the Redis cache with a configured TTL. Handles potential connection errors.
+    IT: Salva i dati nella cache Redis con un TTL configurato. Gestisce potenziali errori di connessione.
+    """
+    try:
+        ttl_seconds = current_app.config.get('CACHE_TTL_MINUTES', 15) * 60
+        value_to_store = json.dumps(data)
+        current_app.redis.setex(key, ttl_seconds, value_to_store)
+    except Exception as e:
+        current_app.logger.error(f"Redis SETEX failed for key '{key}': {e}")

@@ -1,8 +1,39 @@
-Flask==2.3.3
-Flask-Cors==4.0.0
-gunicorn==21.2.0
-requests==2.31.0
-pydantic==2.6.4
-python-dotenv==1.0.0
+# EN: The core web framework for building the application.
+# IT: Il framework web principale per costruire l'applicazione.
+Flask>=2.3
+
+# EN: A production-ready WSGI server to run the Flask app.
+# IT: Un server WSGI per production per eseguire l'app Flask.
+gunicorn>=21.2
+
+# EN: Flask extension for setting important security headers.
+# IT: Estensione Flask per impostare importanti header di sicurezza.
 Flask-Talisman==1.1.0
+
+# EN: Flask extension for rate-limiting to prevent abuse.
+# IT: Estensione Flask per il rate-limiting per prevenire abusi.
 Flask-Limiter==3.5.0
+
+# EN: Flask extension for handling Cross-Origin Resource Sharing (CORS).
+# IT: Estensione Flask per la gestione del Cross-Origin Resource Sharing (CORS).
+Flask-Cors
+
+# EN: Library to load environment variables from a .env file.
+# IT: Libreria per caricare le variabili d'ambiente da un file .env.
+python-dotenv
+
+# EN: Library for data validation, used in the models.
+# IT: Libreria per la validazione dei dati, usata nei modelli.
+pydantic
+
+# EN: The Python client for the Redis key-value store.
+# IT: Il client Python per il key-value store Redis.
+redis
+
+# EN: Framework for writing and running automated tests.
+# IT: Framework per scrivere ed eseguire test automatici.
+pytest
+
+# EN: Library for making HTTP requests, needed for integration tests.
+# IT: Libreria per fare richieste HTTP, necessaria per i test di integrazione.
+requests
