@@ -1,5 +1,5 @@
 /**
- * Script for the Classroom Schedule View - Robust & Legacy Browser Compatible Version.
+ * Script for the Classroom Schedule View - FINAL VERSION with Nginx Proxy Time Sync.
  */
 document.addEventListener('DOMContentLoaded', function() {
     // --- Riferimenti al DOM ---
@@ -17,17 +17,20 @@ document.addEventListener('DOMContentLoaded', function() {
         lessons: [],
         fetchStatus: 'loading',
         params: new URLSearchParams(window.location.search),
+        timeDifference: 0, // Differenza tra ora del server e ora locale
         get displayDate() {
             var dateStr = this.params.get('date') || new Date().toISOString().split('T')[0];
             return new Date(dateStr + 'T12:00:00');
         }
     };
-
+    
     var config = {
+        // L'URL ora punta al percorso gestito da Nginx
+        timeServiceUrl: 'http://172.16.32.13/api/time/',
         languageToggleInterval: 15,
         dataRefreshInterval: 5 * 60,
     };
-
+    
     var translations = {
         it: {
             days: ["Domenica", "Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato"],
@@ -46,14 +49,46 @@ document.addEventListener('DOMContentLoaded', function() {
             loadingError: "Error loading lessons"
         }
     };
-
+    
     var padZero = function(n) { return n < 10 ? '0' + n : String(n); };
 
+    // VERSIONE NUOVA E CORRETTA
     function updateClock() {
-        var now = new Date();
-        dom.clock.textContent = padZero(now.getHours()) + ':' + padZero(now.getMinutes()) + ':' + padZero(now.getSeconds());
-    }
+        // Calcoliamo l'ora del server stimata
+        var serverTime = new Date(new Date().getTime() + state.timeDifference);
 
+        // Opzioni per formattare l'ora nel fuso orario di Roma, includendo i secondi
+        var clockOptions = {
+            timeZone: 'Europe/Rome',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+        };
+        
+        // Usiamo lo stesso metodo delle lezioni per garantire coerenza
+        dom.clock.textContent = serverTime.toLocaleTimeString('it-IT', clockOptions);
+    }
+    
+    function syncTimeWithServer() {
+        fetch(config.timeServiceUrl)
+            .then(function(response) {
+                if (!response.ok) throw new Error('Time API not responding');
+                return response.json();
+            })
+            .then(function(data) {
+                var serverNow = new Date(data.time);
+                var clientNow = new Date();
+                state.timeDifference = serverNow - clientNow;
+                console.log('Time synchronized. Server/client difference:', state.timeDifference, 'ms');
+            })
+            .catch(function(error) {
+                console.error('Could not sync time with server:', error);
+                state.timeDifference = 0;
+                dom.clock.style.color = 'red';
+            });
+    }
+    
     function updateStaticUI() {
         var lang = translations[state.currentLanguage];
         var displayDate = state.displayDate;
@@ -64,7 +99,7 @@ document.addEventListener('DOMContentLoaded', function() {
             dom.classroomName.textContent = state.lessons[0] ? state.lessons[0].classroom_name : 'Classroom';
         }
     }
-
+    
     function updateLanguageStrings() {
         updateStaticUI();
         var rows = dom.lessonBody.querySelectorAll('tr');
@@ -75,7 +110,8 @@ document.addEventListener('DOMContentLoaded', function() {
             rows.forEach(function(row, index) {
                 var lesson = state.lessons[index];
                 if (lesson) {
-                    var status = getStatus(lesson.start_time, lesson.end_time);
+                    var now = new Date(new Date().getTime() + state.timeDifference);
+                    var status = getStatus(lesson.start_time, lesson.end_time, now);
                     var statusText = translations[state.currentLanguage].status[status.key];
                     var statusElement = row.querySelector('.status-text');
                     if (statusElement) {
@@ -85,25 +121,41 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     }
-
+    
     function toggleLanguage() {
         state.currentLanguage = (state.currentLanguage === 'en') ? 'it' : 'en';
         dom.body.className = 'lang-' + state.currentLanguage;
         updateLanguageStrings();
     }
-
+    
     function showMessageInTable(messageKey) {
         var message = translations[state.currentLanguage][messageKey];
         dom.lessonBody.innerHTML = '<tr><td colspan="4">' + message + '</td></tr>';
     }
-
-    function getStatus(startTimeStr, endTimeStr) {
-        var now = new Date();
+    
+    function getStatus(startTimeStr, endTimeStr, now) {
         var start = new Date(startTimeStr);
         var end = new Date(endTimeStr);
         if (now < start) return { key: 'soon', class: 'status-soon' };
         if (now > end) return { key: 'ended', class: 'status-ended' };
         return { key: 'live', class: 'status-live' };
+    }
+    
+    function updateLessonStatus(now) {
+        var rows = dom.lessonBody.querySelectorAll('tr');
+        if (!rows.length || (rows.length === 1 && rows[0].querySelector('td[colspan="4"]'))) {
+            return;
+        }
+        rows.forEach(function(row, index) {
+            var lesson = state.lessons[index];
+            if (lesson) {
+                var status = getStatus(lesson.start_time, lesson.end_time, now);
+                var statusIndicator = row.querySelector('.status-dot');
+                if (statusIndicator) {
+                    statusIndicator.className = 'status-dot ' + status.class;
+                }
+            }
+        });
     }
 
     function renderLessons() {
@@ -115,11 +167,19 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         var fragment = document.createDocumentFragment();
+        var now = new Date(new Date().getTime() + state.timeDifference);
         state.lessons.forEach(function(lesson) {
             var start = new Date(lesson.start_time);
             var end = new Date(lesson.end_time);
-            var timeRange = padZero(start.getHours()) + ':' + padZero(start.getMinutes()) + ' - ' + padZero(end.getHours()) + ':' + padZero(end.getMinutes());
-            var status = getStatus(lesson.start_time, lesson.end_time);
+
+            // Opzioni per formattare l'ora nel fuso orario di Roma
+            var timeOptions = { timeZone: 'Europe/Rome', hour: '2-digit', minute: '2-digit', hour12: false };
+            
+            var startTime = start.toLocaleTimeString('it-IT', timeOptions);
+            var endTime = end.toLocaleTimeString('it-IT', timeOptions);
+            var timeRange = startTime + ' - ' + endTime;
+
+            var status = getStatus(lesson.start_time, lesson.end_time, now);
             var statusText = translations[state.currentLanguage].status[status.key];
             var row = document.createElement('tr');
             row.innerHTML = '<td>' + timeRange + '</td><td style="text-align: left;">' + lesson.lesson_name + '</td><td><div class="status-indicator"><span class="status-dot ' + status.class + '"></span><span class="status-text">' + statusText + '</span></div></td><td style="text-align: left;">' + lesson.instructor + '</td>';
@@ -129,8 +189,7 @@ document.addEventListener('DOMContentLoaded', function() {
         updateStaticUI();
         setTimeout(setupAutoScroll, 100);
     }
-
-    // Aggiunto try...catch per robustezza
+    
     function fetchLessons() {
         try {
             var classroomId = state.params.get('classroom');
@@ -208,25 +267,22 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         scrollAnimationId = requestAnimationFrame(animateScroll);
     }
-
-            // --- Logica per la Schermata di Caricamento ---
-    // Aspetta che l'intera pagina (immagini, stili, etc.) sia completamente caricata
+    
     window.onload = function() {
         var loader = document.getElementById('loader');
         if (loader) {
-            // Aggiunge la classe 'hidden' per far scomparire il loader con una transizione
-            loader.classList.add('hidden');
+            loader.classList.add('hidden'); 
         }
     };
     
-
     function init() {
         dom.body.className = 'lang-' + state.currentLanguage;
+        
+        syncTimeWithServer();
         updateStaticUI();
         fetchLessons();
         var secondsCounter = 0;
         
-        // Aggiunto try...catch per robustezza
         setInterval(function() {
             try {
                 secondsCounter++;
@@ -236,13 +292,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 if (secondsCounter % config.dataRefreshInterval === 0) {
                     fetchLessons();
+                    syncTimeWithServer();
                 }
             } catch (e) {
                 console.error("Errore nell'intervallo principale:", e);
             }
         }, 1000);
 
-        // Aggiunto ricaricamento pagina per stabilità
         setTimeout(function() { 
             window.location.reload(true); 
         }, 4 * 60 * 60 * 1000);
