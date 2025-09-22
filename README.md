@@ -48,13 +48,12 @@ Questo diagramma illustra il flusso dei dati e il ruolo del `schedule-service` a
 
 ```mermaid
 graph TD
-    A[API Universitaria Esterna] -->|Dati grezzi| B(Schedule Service);
+    A[University Planner] -->|Dati grezzi| B(Schedule Service);
     B -->|Salva/Leggi| C(Redis Cache);
     B -->|Dati puliti| D{Proxy Nginx};
     D --> E[Display Aula];
     D --> F[Display Piano];
-    D --> G[Totem Interattivo];
-    D --> H[Altri Servizi];
+    D --> G[Altri Servizi];
 ```
 _Il servizio funge da gateway e cache, proteggendo l'API esterna e garantendo risposte rapide._
 
@@ -95,31 +94,32 @@ Il progetto è organizzato in modo da separare chiaramente la logica dell'applic
 
 ```
 schedule-service/
-├── app/                  # Codice sorgente dell'applicazione Flask
-│   ├── api/              # Definizione delle rotte e degli endpoint
+├── app/                    # Codice sorgente dell'applicazione Flask
+│   ├── api/                # Definizione delle rotte e degli endpoint
 │   │   └── routes.py
-│   ├── services/         # Logica di business e interazione con la cache
-│   │   ├── models.py
-│   │   └── services.py
-│   ├── __init__.py       # Application factory (crea l'app Flask)
-│   └── config.py         # Carica la configurazione da variabili d'ambiente
+│   ├── services/           # Logica di business e interazione con la cache
+│   │   ├── models.py       # Definisce i modelli Pydantic per la validazione dei dati e le funzioni di aiuto per la cache Redis
+│   │   └── services.py     # Contiene la logica di business principale dell'applicazione
+│   ├── __init__.py         # Application factory (crea l'app Flask)
+│   └── config.py           # Carica la configurazione da variabili d'ambiente
 │
-├── config/               # File di configurazione esterni
+├── config/                 # File di configurazione esterni
 │   └── classroom_data.json # Mappa di aule, piani ed edifici
 │
-├── tests/                # Test automatici
+├── tests/                  # Test automatici
 │   ├── __init__.py
-│   └── test_api.py       # Test di integrazione per gli endpoint API
+│   └── test_api.py         # Test di integrazione per gli endpoint API
 │
-├── ui/                   # Tutti i file del front-end
-│   ├── static/           # File CSS e JavaScript
-│   └── ...
+├── ui/                     # Tutti i file del front-end
+│   ├── assets/             # File CSS e JavaScript
+│   ├── static/             # File CSS e JavaScript
+│   ├── classroom_view.html
+│   └── floor_view.html
 │
-├── .env                  # Variabili d'ambiente LOCALI (non versionato)
-├── .env.example          # Template per le variabili d'ambiente
-├── Dockerfile            # Istruzioni per costruire l'immagine del servizio
-├── requirements.txt      # Dipendenze Python
-└── run.py                # Punto di ingresso per avviare il servizio
+├── .env                    # Variabili d'ambiente LOCALI
+├── Dockerfile              # Istruzioni per costruire l'immagine del servizio
+├── requirements.txt        # Dipendenze Python
+└── run.py                  # Punto di ingresso per avviare il servizio
 ```
 
 ---
@@ -128,7 +128,6 @@ schedule-service/
 
 Per eseguire questo servizio, è necessario avere installato:
 - [Docker Engine](https://docs.docker.com/engine/install/)
-- [Docker Compose V2](https://docs.docker.com/compose/install/) (il plugin che si usa con `docker compose`)
 
 ---
 
