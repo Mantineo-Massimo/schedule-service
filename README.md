@@ -1,20 +1,16 @@
-# Schedule Service
+# Schedule Service (Servizio Orari)
 
 [![Stato del Servizio](https://img.shields.io/badge/status-stabile-green.svg)](https://shields.io/)
 [![Linguaggio](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/)
-[![Framework](https://img.shields.io/badge/flask-2.3-lightgrey.svg)](https://flask.palletsprojects.com/)
+[![Framework](https://img.shields.io/badge/Flask-2.3-lightgrey.svg)](https://flask.palletsprojects.com/)
 [![Licenza](https://img.shields.io/badge/licenza-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-![Python](https://img.shields.io/badge/Python-3.11-blue.svg)
-![Flask](https://img.shields.io/badge/Flask-2.3-black?logo=flask)
-![Pydantic](https://img.shields.io/badge/Pydantic-v2-blue)
-![Docker](https://img.shields.io/badge/Docker-Ready-blue?logo=docker)
 
 Un microservizio per visualizzare in tempo reale gli orari delle lezioni universitarie, sia per singole aule che per interi piani di un edificio.
 
 ![Showcase del Servizio Classroom](https://github.com/Mantineo-Massimo/DigitalSignageSuite/blob/master/docs/schedule-classroom-showcase.png?raw=true)
 ![Showcase del Servizio Floor](https://github.com/Mantineo-Massimo/DigitalSignageSuite/blob/master/docs/schedule-floor-showcase.png?raw=true)
 
-Il **`schedule-service`** è un microservizio backend robusto e scalabile, parte integrante della **Digital Signage Suite**. Il suo scopo principale è agire come intermediario tra un'API universitaria esterna e i vari display del sistema, fornendo dati sugli orari delle lezioni in modo efficiente, affidabile e sicuro.
+Il **`schedule-service`** è un microservizio backend robusto e scalabile, parte integrante della **Digital Signage Suite**. Il suo scopo principale è agire come intermediario tra un'API universitaria esterna (come quella dell'Università di Messina) e i vari display del sistema, fornendo dati sugli orari delle lezioni in modo efficiente, affidabile e sicuro.
 
 ---
 
@@ -24,6 +20,7 @@ Il **`schedule-service`** è un microservizio backend robusto e scalabile, parte
 - [Diagramma dell'Architettura](#diagramma-dellarchitettura)
 - [Caratteristiche Principali](#caratteristiche-principali)
 - [Tecnologie Utilizzate](#tecnologie-utilizzate)
+- [Struttura della Directory](#struttura-della-directory)
 - [Prerequisiti](#prerequisiti)
 - [Guida all'Installazione](#guida-allinstallazione)
 - [Variabili d'Ambiente](#variabili-dambiente)
@@ -92,6 +89,41 @@ _Il servizio funge da gateway e cache, proteggendo l'API esterna e garantendo ri
 
 ---
 
+## Struttura della Directory
+
+Il progetto è organizzato in modo da separare chiaramente la logica dell'applicazione, la configurazione, i test e l'interfaccia utente.
+
+```
+schedule-service/
+├── app/                  # Codice sorgente dell'applicazione Flask
+│   ├── api/              # Definizione delle rotte e degli endpoint
+│   │   └── routes.py
+│   ├── services/         # Logica di business e interazione con la cache
+│   │   ├── models.py
+│   │   └── services.py
+│   ├── __init__.py       # Application factory (crea l'app Flask)
+│   └── config.py         # Carica la configurazione da variabili d'ambiente
+│
+├── config/               # File di configurazione esterni
+│   └── classroom_data.json # Mappa di aule, piani ed edifici
+│
+├── tests/                # Test automatici
+│   ├── __init__.py
+│   └── test_api.py       # Test di integrazione per gli endpoint API
+│
+├── ui/                   # Tutti i file del front-end
+│   ├── static/           # File CSS e JavaScript
+│   └── ...
+│
+├── .env                  # Variabili d'ambiente LOCALI (non versionato)
+├── .env.example          # Template per le variabili d'ambiente
+├── Dockerfile            # Istruzioni per costruire l'immagine del servizio
+├── requirements.txt      # Dipendenze Python
+└── run.py                # Punto di ingresso per avviare il servizio
+```
+
+---
+
 ## Prerequisiti
 
 Per eseguire questo servizio, è necessario avere installato:
@@ -114,14 +146,14 @@ Per eseguire questo servizio, è necessario avere installato:
     cd schedule-service
     cp .env.example .env
     ```
-    Apri il file `.env` appena creato e personalizza le variabili se necessario (anche se i valori predefiniti dovrebbero funzionare per lo sviluppo).
+    Apri il file `.env` appena creato e personalizza le variabili se necessario.
 
 3.  **Avvia l'Intero Stack**
     Torna alla cartella principale `DigitalSignageSuite` ed esegui il comando:
     ```bash
     docker compose up --build -d
     ```
-    Questo comando costruirà le immagini di tutti i servizi, creerà la rete condivisa e avvierà i container in background. Il `schedule-service` sarà accessibile tramite il proxy Nginx sulla porta 80.
+    Questo comando costruirà le immagini di tutti i servizi, creerà la rete condivisa e avvierà i container in background.
 
 ---
 
@@ -157,7 +189,6 @@ Per lanciare i test, esegui questo comando dalla cartella principale `DigitalSig
 ```bash
 pytest
 ```
-L'output dovrebbe mostrare che tutti i test sono stati superati (`... passed`).
 
 ---
 
@@ -166,11 +197,10 @@ L'output dovrebbe mostrare che tutti i test sono stati superati (`... passed`).
 I contributi sono sempre i benvenuti! Per contribuire:
 1.  Fai un fork del repository.
 2.  Crea un nuovo branch (`git checkout -b feature/nome-feature`).
-3.  Fai le tue modifiche.
-4.  Assicurati che i test passino (`pytest`).
-5.  Fai il commit delle tue modifiche (`git commit -am 'Aggiungi nuova feature'`).
-6.  Fai il push sul tuo branch (`git push origin feature/nome-feature`).
-7.  Apri una Pull Request.
+3.  Fai le tue modifiche e assicurati che i test passino (`pytest`).
+4.  Fai il commit delle tue modifiche (`git commit -am 'Aggiungi nuova feature'`).
+5.  Fai il push sul tuo branch (`git push origin feature/nome-feature`).
+6.  Apri una Pull Request.
 
 ---
 
