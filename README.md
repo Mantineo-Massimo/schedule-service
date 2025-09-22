@@ -53,7 +53,6 @@ graph TD
     B -->|Dati puliti| D{Proxy Nginx};
     D --> E[Display Aula];
     D --> F[Display Piano];
-    D --> G[Altri Servizi];
 ```
 _Il servizio funge da gateway e cache, proteggendo l'API esterna e garantendo risposte rapide._
 
