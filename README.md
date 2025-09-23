@@ -55,7 +55,7 @@ graph TD
       B -->|Salva/Leggi| C(Redis Cache);
     end 
 
-    subgraph "Digital Signage Suite (Rete Docker)"
+    subgraph "Digital Signage Suite"
       B -->|Dati puliti| D{Proxy Nginx};
       D --> E[Display Aula];
       D --> F[Display Piano];
