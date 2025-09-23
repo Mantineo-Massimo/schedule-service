@@ -23,6 +23,7 @@ Il **`schedule-service`** è un microservizio backend robusto e scalabile, parte
 - [Struttura della Directory](#struttura-della-directory)
 - [Prerequisiti](#prerequisiti)
 - [Guida all'Installazione](#guida-allinstallazione)
+- [Accesso e Link Utili](#accesso-e-link-utili)
 - [Variabili d'Ambiente](#variabili-dambiente)
 - [Documentazione API](#documentazione-api)
 - [Esecuzione dei Test](#esecuzione-dei-test)
@@ -48,7 +49,7 @@ Questo diagramma illustra il flusso dei dati e il ruolo del `schedule-service` a
 
 ```mermaid
 graph TD
-    A[University Planner] -->|Dati grezzi| B(Schedule Service);
+    A[API Universitaria Esterna] -->|Dati grezzi| B(Schedule Service);
     B -->|Salva/Leggi| C(Redis Cache);
     B -->|Dati puliti| D{Proxy Nginx};
     D --> E[Display Aula];
@@ -97,8 +98,8 @@ schedule-service/
 │   ├── api/                # Definizione delle rotte e degli endpoint
 │   │   └── routes.py
 │   ├── services/           # Logica di business e interazione con la cache
-│   │   ├── models.py       # Definisce i modelli Pydantic per la validazione dei dati e le funzioni di aiuto per la cache Redis
-│   │   └── services.py     # Contiene la logica di business principale dell'applicazione
+│   │   ├── models.py       # Modelli Pydantic e funzioni helper per la cache
+│   │   └── services.py     # Logica di business (recupero, parsing dati)
 │   ├── __init__.py         # Application factory (crea l'app Flask)
 │   └── config.py           # Carica la configurazione da variabili d'ambiente
 │
@@ -110,12 +111,12 @@ schedule-service/
 │   └── test_api.py         # Test di integrazione per gli endpoint API
 │
 ├── ui/                     # Tutti i file del front-end
-│   ├── assets/             # File CSS e JavaScript
+│   ├── assets/             # Immagini, icone, ecc.
 │   ├── static/             # File CSS e JavaScript
-│   ├── classroom_view.html
-│   └── floor_view.html
+│   ├── classroom_view.html # Pagina per la singola aula
+│   └── floor_view.html     # Pagina per l'intero piano
 │
-├── .env                    # Variabili d'ambiente LOCALI
+├── .env                    # Variabili d'ambiente LOCALI (non versionato su Git)
 ├── Dockerfile              # Istruzioni per costruire l'immagine del servizio
 ├── requirements.txt        # Dipendenze Python
 └── run.py                  # Punto di ingresso per avviare il servizio
@@ -127,6 +128,7 @@ schedule-service/
 
 Per eseguire questo servizio, è necessario avere installato:
 - [Docker Engine](https://docs.docker.com/engine/install/)
+- [Docker Compose V2](https://docs.docker.com/compose/install/) (il plugin che si usa con `docker compose`)
 
 ---
 
@@ -134,7 +136,7 @@ Per eseguire questo servizio, è necessario avere installato:
 
 1.  **Clona il Repository**
     ```bash
-    git clone <URL_DEL_TUO_REPOSITORY>
+    git clone [https://github.com/Mantineo-Massimo/DigitalSignageSuite.git](https://github.com/Mantineo-Massimo/DigitalSignageSuite.git)
     cd DigitalSignageSuite
     ```
 
@@ -151,7 +153,39 @@ Per eseguire questo servizio, è necessario avere installato:
     ```bash
     docker compose up --build -d
     ```
-    Questo comando costruirà le immagini di tutti i servizi, creerà la rete condivisa e avvierà i container in background.
+    Questo comando costruirà le immagini, creerà la rete e avvierà i container in background.
+
+---
+
+## Accesso e Link Utili 🔗
+Una volta avviato lo stack, tutti i servizi sono accessibili tramite il proxy Nginx sulla porta `80`. L'indirizzo base sarà `http://localhost/` o l'IP della macchina host.
+
+### Vista Aula
+Per visualizzare l'orario di una singola aula, usa il seguente formato:
+`http://localhost/schedule/classroom_view.html?classroom=<ID_AULA>&building=<ID_EDIFICIO>`
+
+- **Esempio:**
+  ```
+  http://localhost/schedule/classroom_view.html?classroom=5f775da9bb0c1600171ae370&building=5f6cb2c183c80e0018f4d46
+  ```
+
+### Vista Piano
+Per visualizzare l'orario di un intero piano, usa il seguente formato:
+`http://localhost/schedule/floor_view.html?building=<SIGLA_EDIFICIO>&floor=<NUMERO_PIANO>`
+
+- **Esempio:**
+  ```
+  http://localhost/schedule/floor_view.html?building=A&floor=1
+  ```
+
+### Health Check (Stato del Servizio)
+Questo link è usato per monitorare se il servizio è attivo e funzionante. Restituisce una risposta JSON.
+
+- **Link:**
+  ```
+  http://localhost/schedule/health
+  ```
+- **Risposta Attesa:** `{"status": "ok"}`
 
 ---
 
