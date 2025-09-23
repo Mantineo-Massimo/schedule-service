@@ -136,7 +136,7 @@ Per eseguire questo servizio, è necessario avere installato:
 
 1.  **Clona il Repository**
     ```bash
-    git clone [https://github.com/Mantineo-Massimo/DigitalSignageSuite.git](https://github.com/Mantineo-Massimo/DigitalSignageSuite.git)
+    git clone https://github.com/Mantineo-Massimo/DigitalSignageSuite.git
     cd DigitalSignageSuite
     ```
 
