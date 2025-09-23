@@ -50,7 +50,7 @@ Questo diagramma illustra il flusso dei dati e il ruolo del `schedule-service` a
 ```mermaid
 graph TD
 
-    subgraph Container telegram-service
+    subgraph Container schedule-service
       A[API Universitaria Esterna] -->|Dati grezzi| B(Schedule Service);
       B -->|Salva/Leggi| C(Redis Cache);
     end 
