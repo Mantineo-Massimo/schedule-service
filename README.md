@@ -49,11 +49,17 @@ Questo diagramma illustra il flusso dei dati e il ruolo del `schedule-service` a
 
 ```mermaid
 graph TD
-    A[API Universitaria Esterna] -->|Dati grezzi| B(Schedule Service);
-    B -->|Salva/Leggi| C(Redis Cache);
-    B -->|Dati puliti| D{Proxy Nginx};
-    D --> E[Display Aula];
-    D --> F[Display Piano];
+
+    subgraph Container telegram-service
+      A[API Universitaria Esterna] -->|Dati grezzi| B(Schedule Service);
+      B -->|Salva/Leggi| C(Redis Cache);
+    end 
+
+    subgraph "Digital Signage Suite (Rete Docker)"
+      B -->|Dati puliti| D{Proxy Nginx};
+      D --> E[Display Aula];
+      D --> F[Display Piano];
+    end
 ```
 _Il servizio funge da gateway e cache, proteggendo l'API esterna e garantendo risposte rapide._
 
