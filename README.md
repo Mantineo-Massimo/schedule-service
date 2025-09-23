@@ -157,7 +157,7 @@ Per eseguire questo servizio, è necessario avere installato:
 
 ---
 
-## Accesso e Link Utili 🔗
+## Accesso e Link Utili
 Una volta avviato lo stack, tutti i servizi sono accessibili tramite il proxy Nginx sulla porta `80`. L'indirizzo base sarà `http://localhost/` o l'IP della macchina host.
 
 ### Vista Aula
