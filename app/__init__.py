@@ -3,15 +3,13 @@ EN:
 Application factory for the Flask web service.
 This file is responsible for creating and configuring the Flask app instance.
 It initializes all necessary extensions like CORS, Talisman for security,
-the Redis connection, and the Limiter for rate-limiting. It also loads
-all external configurations and registers the API blueprints.
+the Redis connection, and loads all external configurations and registers the API blueprints.
 
 IT:
 "Application factory" per il servizio web Flask.
 Questo file è responsabile della creazione e configurazione dell'istanza dell'app Flask.
 Inizializza tutte le estensioni necessarie come CORS, Talisman per la sicurezza,
-la connessione a Redis e il Limiter per il rate-limiting. Carica inoltre
-tutte le configurazioni esterne e registra i blueprint delle API.
+la connessione a Redis, carica le configurazioni esterne e registra i blueprint.
 """
 import os
 import json
@@ -19,8 +17,6 @@ import redis
 from flask import Flask
 from flask_cors import CORS
 from flask_talisman import Talisman
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
 
 def load_classroom_data(app):
     """
@@ -46,22 +42,13 @@ def create_app():
     from .config import Config
     app.config.from_object(Config)
 
-    # EN: Create a Redis connection pool and attach it to the app.
-    # IT: Crea un pool di connessioni Redis e lo collega all'app.
+    # EN: Create a Redis connection pool and attach it to the app instance.
+    # IT: Crea un pool di connessioni Redis e lo collega all'istanza dell'app.
     app.redis = redis.from_url(app.config['REDIS_URL'])
 
     # EN: Load the classroom data from the external JSON file.
     # IT: Carica i dati delle aule dal file JSON esterno.
     load_classroom_data(app)
-
-    # EN: Initialize the Limiter to use Redis as its storage backend.
-    # IT: Inizializza il Limiter affinché usi Redis come memoria.
-    limiter = Limiter(
-        get_remote_address,
-        app=app,
-        default_limits=["200 per day", "50 per hour"],
-        storage_uri=app.config["REDIS_URL"]
-    )
 
     # EN: Initialize security extensions.
     # IT: Inizializza le estensioni di sicurezza.
@@ -72,9 +59,5 @@ def create_app():
     # IT: Registra il blueprint che contiene tutte le rotte.
     from .api.routes import api_bp
     app.register_blueprint(api_bp)
-
-    # EN: Apply a more specific rate limit to all routes in the blueprint.
-    # IT: Applica un limite di richieste più specifico a tutte le rotte nel blueprint.
-    limiter.limit("10 per minute")(api_bp)
 
     return app
