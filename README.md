@@ -225,6 +225,7 @@ I test di integrazione verificano che gli endpoint principali si comportino come
 
 Per lanciare i test, esegui questo comando dalla cartella principale `DigitalSignageSuite`:
 ```bash
+cd schedule-service 
 pytest
 ```
 
