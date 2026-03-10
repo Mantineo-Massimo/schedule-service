@@ -213,53 +213,43 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
     
-    var scrollAnimationId;
+    var scrollAnimationId; // Manteniamo la variabile per compatibilità, ma non la useremo
+    
     /**
-     * EN: Sets up a smooth, continuous scrolling animation.
-     * IT: Imposta un'animazione di scorrimento continuo e fluido.
+     * EN: Sets up a smooth scrolling animation using CSS.
+     * IT: Imposta un'animazione di scorrimento fluida usando i CSS.
      */
     function setupAutoScroll() {
         var wrapper = document.querySelector('.scroll-body');
         if (!wrapper) return;
         var table = wrapper.querySelector('table');
-        cancelAnimationFrame(scrollAnimationId);
 
+        // Rimuoviamo qualsiasi animazione precedente per resettare
+        table.style.animation = 'none';
+        table.style.transform = 'translateY(0)'; // Resetta la posizione
+        
         var wrapperHeight = wrapper.clientHeight;
         var tableHeight = table.scrollHeight;
 
+        // EN: If no scrolling is needed, stop.
+        // IT: Se non serve lo scroll, si ferma.
         if (tableHeight <= wrapperHeight) {
-            table.style.transform = 'translateY(0)';
             return;
         }
 
-        var position = 0;
-        var direction = -1;
-        var speed = 0.5;
-        var pauseDuration = 3000;
-        var isPaused = true;
-        setTimeout(function() { isPaused = false; }, pauseDuration);
+        // 1. Calcola la distanza massima di scorrimento (sarà un numero negativo)
+        var maxScroll = wrapperHeight - tableHeight;
 
-        function animateScroll() {
-            if (!isPaused) {
-                position += direction * speed;
-                var maxScroll = wrapperHeight - tableHeight;
+        // 2. Inietta questo valore in una variabile CSS
+        //    Questo permette al CSS di sapere dove fermarsi
+        document.documentElement.style.setProperty('--max-scroll-distance', maxScroll + 'px');
 
-                if (position <= maxScroll) {
-                    position = maxScroll;
-                    direction = 1;
-                    isPaused = true;
-                    setTimeout(function() { isPaused = false; }, pauseDuration);
-                } else if (position >= 0) {
-                    position = 0;
-                    direction = -1;
-                    isPaused = true;
-                    setTimeout(function() { isPaused = false; }, pauseDuration);
-                }
-            }
-            table.style.transform = 'translateY(' + position + 'px)';
-            scrollAnimationId = requestAnimationFrame(animateScroll);
-        }
-        scrollAnimationId = requestAnimationFrame(animateScroll);
+        // 3. Applica la classe o l'animazione CSS
+        //    (Usiamo un piccolo trucco per forzare il riavvio dell'animazione)
+        void table.offsetWidth; // Forza il browser a "ri-calcolare" lo stile
+        
+        // 66s = 30s discesa + 3s pausa + 30s salita + 3s pausa
+        table.style.animation = 'scroll-animation 66s linear infinite';
     }
 
     /**

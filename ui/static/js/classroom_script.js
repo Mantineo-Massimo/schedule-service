@@ -186,12 +186,28 @@ document.addEventListener('DOMContentLoaded', function() {
      * IT: Renderizza le lezioni nella tabella o mostra un messaggio (es. nessuna lezione, errore).
      */
     function renderLessons() {
+        // EN: Call this first to ensure date and classroom name are always updated,
+        //     even if there are no lessons or an error occurs.
+        // IT: Chiama questa funzione per prima per assicurare che data e nome aula
+        //     siano sempre aggiornati, anche se non ci sono lezioni o c'è un errore.
+        updateStaticUI(); 
+        
         dom.lessonBody.innerHTML = '';
+        
+        // EN: Check for error, no lessons, or a message from the API (e.g., "no lessons for this classroom").
+        // IT: Controlla se c'è un errore, nessuna lezione, o un messaggio dall'API (es. "nessuna lezione per quest'aula").
         if (state.fetchStatus === 'error' || !state.lessons.length || state.lessons[0].message) {
+            
+            // EN: Ensure classroom name is set even if lessons array is empty or contains a message.
+            // IT: Assicura che il nome dell'aula sia impostato anche se l'array è vuoto o contiene un messaggio.
             dom.classroomName.textContent = state.lessons[0] ? state.lessons[0].classroom_name : 'Classroom';
+            
             var messageKey = (state.fetchStatus === 'error') ? 'loadingError' : 'noLessons';
             showMessageInTable(messageKey);
-            return;
+            
+            // EN: Stop execution here; no lessons to render.
+            // IT: Ferma l'esecuzione qui; nessuna lezione da renderizzare.
+            return; 
         }
 
         var fragment = document.createDocumentFragment();
@@ -212,8 +228,9 @@ document.addEventListener('DOMContentLoaded', function() {
             row.innerHTML = '<td>' + timeRange + '</td><td style="text-align: left;">' + lesson.lesson_name + '</td><td><div class="status-indicator"><span class="status-dot ' + status.class + '"></span><span class="status-text">' + statusText + '</span></div></td><td style="text-align: left;">' + lesson.instructor + '</td>';
             fragment.appendChild(row);
         });
+        
         dom.lessonBody.appendChild(fragment);
-        updateStaticUI();
+
         // EN: Delay scroll setup to allow the DOM to update. / IT: Ritarda l'impostazione dello scroll per permettere al DOM di aggiornarsi.
         setTimeout(setupAutoScroll, 100);
     }
@@ -326,7 +343,9 @@ document.addEventListener('DOMContentLoaded', function() {
      */
     function init() {
         dom.body.className = 'lang-' + state.currentLanguage;
-        
+
+        updateStaticUI();
+
         syncTimeWithServer();
         fetchLessons();
         
