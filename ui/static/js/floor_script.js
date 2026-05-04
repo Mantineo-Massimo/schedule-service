@@ -36,10 +36,16 @@ document.addEventListener('DOMContentLoaded', function() {
         currentLanguage: 'it',
         lessons: [],
         fetchStatus: 'loading',
-        params: new URLSearchParams(window.location.search),
-        timeDifference: 0,
+        /**
+         * EN: Helper to get URL parameters without URLSearchParams.
+         */
+        getUrlParameter: function(name) {
+            var results = new RegExp('[\\?&]' + name + '=([^&#]*)').exec(window.location.search);
+            return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+        },
         get displayDate() {
-            var dateStr = this.params.get('date') || new Date().toISOString().split('T')[0];
+            var dateParam = this.getUrlParameter('date');
+            var dateStr = dateParam || new Date().toISOString().split('T')[0];
             return new Date(dateStr + 'T12:00:00');
         }
     };
@@ -119,8 +125,8 @@ document.addEventListener('DOMContentLoaded', function() {
         var monthName = lang.months[displayDate.getUTCMonth()];
         dom.currentDate.textContent = dayName + ' ' + displayDate.getUTCDate() + ' ' + monthName + ' ' + displayDate.getUTCFullYear();
         
-        var buildingKey = state.params.get('building') ? state.params.get('building').toUpperCase() : null;
-        var floorNumber = state.params.get('floor');
+        var buildingKey = state.getUrlParameter('building') ? state.getUrlParameter('building').toUpperCase() : null;
+        var floorNumber = state.getUrlParameter('floor');
         if (buildingKey && floorNumber) {
             var buildingName = lang.building[buildingKey] || buildingKey;
             dom.floorLabel.textContent = buildingName + ' - ' + lang.floor + ' ' + floorNumber;
@@ -185,8 +191,8 @@ document.addEventListener('DOMContentLoaded', function() {
      * IT: Recupera i dati delle lezioni per l'intero piano dal backend.
      */
     function fetchLessons() {
-        var building = state.params.get('building');
-        var floor = state.params.get('floor');
+        var building = state.getUrlParameter('building');
+        var floor = state.getUrlParameter('floor');
         var date = state.displayDate.toISOString().split('T')[0];
 
         if (!building || !floor) {

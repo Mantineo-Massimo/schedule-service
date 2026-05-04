@@ -29,4 +29,4 @@ EXPOSE 8080
 
 # EN: The command to run the application using Gunicorn WSGI server for production.
 # IT: Il comando per avviare l'applicazione usando il server WSGI Gunicorn per la produzione.
-CMD ["gunicorn", "--bind", "0.0.0.0:8080", "run:application"]
+CMD ["gunicorn", "--workers", "4", "--bind", "0.0.0.0:8080", "--access-logfile", "-", "run:application"]

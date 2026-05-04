@@ -11,7 +11,8 @@ e interagire con la cache per migliorare le performance.
 """
 import requests
 import json
-from datetime import datetime, time
+import time
+from datetime import datetime, time as py_time
 from typing import List, Dict, Any, Optional
 from flask import current_app
 from .models import get_from_cache, set_in_cache
@@ -22,7 +23,10 @@ def _make_api_request(url: str) -> List[Dict[str, Any]]:
     IT: Funzione di aiuto per eseguire una richiesta GET all'API esterna con gestione degli errori.
     """
     try:
+        start_time = time.time()
         response = requests.get(url, timeout=10)
+        duration = time.time() - start_time
+        current_app.logger.info(f"API request to {url} took {duration:.2f}s")
         response.raise_for_status()
         return response.json() if "application/json" in response.headers.get("Content-Type", "") else []
     except (requests.RequestException, json.JSONDecodeError) as e:
@@ -59,6 +63,14 @@ def fetch_classroom_lessons(classroom_id: str, building_id: str, date_str: Optio
     EN: Fetches, caches, filters, and sorts lessons for a single classroom.
     IT: Recupera, mette in cache, filtra e ordina le lezioni per una singola aula.
     """
+    # Enforce correct building_id if it's wrongly provided by the client URL
+    building_floor_map = current_app.config.get('BUILDING_FLOOR_MAP', {})
+    for b_key, floors in building_floor_map.items():
+        for f_key, classrooms in floors.items():
+            for c_id, true_b_id in classrooms:
+                if c_id == classroom_id:
+                    building_id = true_b_id
+                    break
     date = date_str or datetime.now().strftime('%Y-%m-%d')
     cache_key = f"lessons_{classroom_id}_{date}"
     if (cached_data := get_from_cache(cache_key)) is not None:
@@ -74,8 +86,8 @@ def fetch_classroom_lessons(classroom_id: str, building_id: str, date_str: Optio
 
     def filter_by_period(lesson):
         start_time = datetime.fromisoformat(lesson['start_time'].replace('Z', '+00:00')).time()
-        return (period == "morning" and start_time < time(13, 0)) or \
-               (period == "afternoon" and start_time >= time(13, 0)) or \
+        return (period == "morning" and start_time < py_time(13, 0)) or \
+               (period == "afternoon" and start_time >= py_time(13, 0)) or \
                period == "all"
 
     return sorted([l for l in all_lessons if filter_by_period(l)], key=lambda x: x['start_time'])

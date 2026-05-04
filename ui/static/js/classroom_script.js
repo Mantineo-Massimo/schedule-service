@@ -38,10 +38,16 @@ document.addEventListener('DOMContentLoaded', function() {
         currentLanguage: 'it',
         lessons: [],
         fetchStatus: 'loading', // 'loading', 'success', or 'error'
-        params: new URLSearchParams(window.location.search),
-        timeDifference: 0, // EN: Difference in ms between server and client time. / IT: Differenza in ms tra ora del server e del client.
+        /**
+         * EN: Helper to get URL parameters without URLSearchParams.
+         */
+        getUrlParameter: function(name) {
+            var results = new RegExp('[\\?&]' + name + '=([^&#]*)').exec(window.location.search);
+            return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+        },
         get displayDate() {
-            var dateStr = this.params.get('date') || new Date().toISOString().split('T')[0];
+            var dateParam = this.getUrlParameter('date');
+            var dateStr = dateParam || new Date().toISOString().split('T')[0];
             return new Date(dateStr + 'T12:00:00');
         }
     };
@@ -240,10 +246,10 @@ document.addEventListener('DOMContentLoaded', function() {
      * IT: Recupera i dati delle lezioni dal backend.
      */
     function fetchLessons() {
-        var classroomId = state.params.get('classroom');
-        var buildingId = state.params.get('building');
+        var classroomId = state.getUrlParameter('classroom');
+        var buildingId = state.getUrlParameter('building');
         var date = state.displayDate.toISOString().split('T')[0];
-        var period = state.params.get('period') || 'all';
+        var period = state.getUrlParameter('period') || 'all';
 
         if (!classroomId || !buildingId) {
             state.fetchStatus = 'error';
@@ -264,6 +270,7 @@ document.addEventListener('DOMContentLoaded', function() {
             state.fetchStatus = 'success';
             state.lessons = data;
             renderLessons();
+            hideLoader();
         })
         .catch(function(error) {
             console.error('Failed to fetch lessons:', error);
@@ -327,14 +334,22 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     /**
+     * EN: Hides the loader overlay.
+     * IT: Nasconde la sovrimpressione del loader.
+     */
+    function hideLoader() {
+        var loader = document.getElementById('loader');
+        if (loader && !loader.classList.contains('hidden')) {
+            loader.classList.add('hidden');
+        }
+    }
+
+    /**
      * EN: Hides the loader when the window is fully loaded.
      * IT: Nasconde il loader quando la finestra è completamente caricata.
      */
     window.onload = function() {
-        var loader = document.getElementById('loader');
-        if (loader) {
-            loader.classList.add('hidden'); 
-        }
+        hideLoader();
     };
     
     /**
